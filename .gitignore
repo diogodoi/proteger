@@ -1,3 +1,9 @@
 venv/
 .vscode
 *.pyc
+*.avi
+*.wav
+*.txt
+Videos/
+movimentos/
+*.db

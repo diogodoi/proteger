@@ -10,6 +10,8 @@ import sqlite3
 import time
 import pyautogui
 import threading
+import pysftp
+import subprocess
 
 width , height = pyautogui.size()
 
@@ -65,8 +67,7 @@ class Ui_MainWindow(object):
         self.aux = False
         self.jan = None
         self.pasta = ""
-        self.robotIP = ""
-         
+        self.robotIP = "" 
 
     def setupUi(self, MainWindow,height=height):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
@@ -332,9 +333,8 @@ class Ui_MainWindow(object):
             self.naoVision()
             aviso = "Aviso: Conexão estabelecida com robô."
             self.enviarAviso(aviso)
-            batteylvl = threading.Thread(target=self.nivelBateria)
-            batteylvl.start()            
-            
+            # nivelBateria = threading.Thread(target=self.nivelBateria)
+            # nivelBateria.start()
         except BaseException:
             aviso = "ERROR: Falha na conexão com robô."
             self.enviarAviso(aviso)
@@ -350,21 +350,21 @@ class Ui_MainWindow(object):
             aviso = "AVISO: Conexão feita com webcam."
             self.enviarAviso(aviso)
         except BaseException:
-            aviso = "ERROR: Falha na conexão com o robô."
+            aviso = "ERROR: Falha na conexão com Webcam."
             self.enviarAviso(aviso)
             self.Status.setStyleSheet(_fromUtf8("background:#FF0000"))
         try:
             self.naoVideoRecording()
             self.naoAudioRecording ()        
-            aviso = "AVISO: Conexão feita com o robô."
+            aviso = "AVISO: Inicio da gravação do NAO."
             self.enviarAviso(aviso)           
         except BaseException:
-            aviso = "ERROR: Falha na conexão com o robô."
+            aviso = "ERROR: Falha na gravação do NAO."
             self.enviarAviso(aviso)
             self.Status.setStyleSheet(_fromUtf8("background:#FF0000"))            
         try:    
             self.salva_ip()                        
-            aviso = "AVISO: A conexão foi estabelecida com o robô."
+            aviso = "AVISO: Sessão iniciada com sucesso."
             self.enviarAviso(aviso)        
             self.BtnConn.setText("Conectado")
             self.Status.setStyleSheet(_fromUtf8("background:#40FF00"))
@@ -379,11 +379,28 @@ class Ui_MainWindow(object):
             self.salva_log()
             self.jan.destroy()
             self.jan = None
-            nomeSessao = self.gera_id_sessao()
-            stop_AVrecording(nomeSessao,self.pasta)
             self.stopVideoRecording()
             self.stopAudioRecording()
+        except BaseException:
+            aviso = "ERROR:Falha ao fechar janelas."
+            self.enviarAviso(aviso)
+        try:
+            self.getNAOfiles()
+            aviso = "AVISO:Video NAO salvo com sucesso."
+            self.enviarAviso(aviso)
+        except BaseException:
+            aviso = "ERROR:Não foi possível salvar o video do NAO."
+            self.enviarAviso(aviso)
+        try:
+            nomeSessao = self.gera_id_sessao()
+            stop_AVrecording(nomeSessao,self.pasta)
             file_manager(nomeSessao,self.pasta)
+            aviso = "AVISO: Video Webcam salva com sucesso."
+            self.enviarAviso(aviso)
+        except BaseException:
+            aviso = "ERROR: Não foi possível salvar o video da WebCam."
+            self.enviarAviso(aviso) 
+        try:           
             #self.desligar()
             self.robotIP = ""
             self.BtnConn.setText("Conectar")
@@ -447,7 +464,7 @@ class Ui_MainWindow(object):
         conn.commit()
         conn.close()         
     def naoVideoRecording(self):        
-        nomeSessao = self.gera_id_sessao()
+        filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
         
         # This records a 320*240 MJPG video at 10 fps.
@@ -455,16 +472,16 @@ class Ui_MainWindow(object):
         videoRecorderProxy.setResolution(1)
         videoRecorderProxy.setFrameRate(10)
         videoRecorderProxy.setVideoFormat("MJPG")
-        videoRecorderProxy.startRecording("/home/nao/recordings/cameras", str(nomeSessao)+"_NAO")
+        videoRecorderProxy.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
     def stopVideoRecording(self):               
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)        
         # Video file is saved on the robot in the
         # /home/nao/recordings/cameras/ folder.
         videoRecorderProxy.stopRecording()        
     def naoAudioRecording(self):        
-        nomeSessao = self.gera_id_sessao()
+        filename = self.gera_id_sessao()
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
-        voiceProxy.startMicrophonesRecording("/home/nao/recordings/cameras/"+nomeSessao+"A.wav",
+        voiceProxy.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
                                              "wav",
                                              48000,
                                              [0,0,1,0])
@@ -479,12 +496,38 @@ class Ui_MainWindow(object):
                 aviso = "Atenção: Nível da bateria em "+ status+"%."
                 self.enviarAviso(str(aviso))
             else:
-                return
+                time.sleep(600)
+                self.nivelBateria()
         except BaseException:
             aviso = "ERROR:Não é possível encontrar o robô."
             self.enviarAviso(aviso)    
-            
-    #Funções dos botões
+    def getNAOfiles(self):
+        myHostname = str(self.setIP())
+        myUsername = "nao"
+        myPassword = "nao"
+        with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
+            print("Connection succesfully stablished ... ")
+            filename = self.gera_id_sessao()
+            # Define the file that you want to download from the remote directory
+            videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
+            audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.wav'
+
+            # Define the local path where the file will be saved
+            # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
+            localFilePath = self.pasta             
+            arqWav = localFilePath+"\\"+filename+"_NAO.wav"
+            arqAvi = localFilePath+"\\"+filename+"_NAO.avi"
+            if localFilePath != "":
+                sftp.get(videopath, arqAvi)
+                sftp.get(audiopath, arqWav)                
+                #print "Muxing"
+                cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
+                subprocess.call(cmd, shell=True)
+                sftp.remove(videopath)
+                sftp.remove(audiopath)
+
+	   
+            #Funções dos botões
     def desligar(self):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)

@@ -212,13 +212,13 @@ def stop_AVrecording(filename,folder=None):
 		subprocess.call(cmd, shell=True)
 	
 		#print "Muxing"
-		cmd = "ffmpeg -ac 2 -channel_layout stereo -i temp_audio.wav -i temp_video2.avi -pix_fmt yuv420p " +folder+"/"+filename + ".avi"
+		cmd = "ffmpeg -ac 2 -channel_layout stereo -i temp_audio.wav -i temp_video2.avi -pix_fmt yuv420p " +folder+"/"+filename + "_SECOND.avi"
 		subprocess.call(cmd, shell=True)
 	
 	else:
 		
 		#print "Normal recording\nMuxing"
-		cmd = "ffmpeg -ac 2 -channel_layout stereo -i temp_audio.wav -i temp_video.avi -pix_fmt yuv420p " +folder+"/"+ filename + ".avi"
+		cmd = "ffmpeg -ac 2 -channel_layout stereo -i temp_audio.wav -i temp_video.avi -pix_fmt yuv420p " +folder+"/"+ filename + "_SECOND.avi"
 		subprocess.call(cmd, shell=True)
 
 		#print ".."
@@ -234,13 +234,20 @@ def file_manager(filename,folder,value = True):
 	
 	if os.path.exists(str(local_path) + "/temp_audio.wav"):
 		os.remove(str(local_path) + "/temp_audio.wav")
+  
+	if os.path.exists(str(pasta) +"/"+filename+"_NAO.wav"):
+		os.remove(str(pasta)+"/"+filename+"_NAO.wav")
+  
 	
 	if os.path.exists(str(local_path) + "/temp_video.avi"):
 		os.remove(str(local_path) + "/temp_video.avi")
 
 	if os.path.exists(str(local_path) + "/temp_video2.avi"):
 		os.remove(str(local_path) + "/temp_video2.avi")
-
+  
+  	if os.path.exists(str(pasta) +"/"+filename+"_NAO.avi"):
+		os.remove(str(pasta) +"/"+filename+"_NAO.avi")
+  
 	if (value == False & os.path.exists(str(pasta) + "/" + filename + ".avi")):		
 		os.remove(str(pasta) + "/" + filename + ".avi")
 	
