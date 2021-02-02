@@ -1,0 +1,4 @@
+(504, u'26/1/2021', u'15:14:30', u'AVISO: Sess\xe3o encerrada com sucesso.')
+(505, u'26/1/2021', u'15:15:21', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')
+(506, u'26/1/2021', u'15:15:26', u'AVISO: Comando enviado com sucesso.')
+(507, u'26/1/2021', u'15:15:40', u'AVISO: Comando enviado com sucesso.')
