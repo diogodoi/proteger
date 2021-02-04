@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog
 from naoqi import ALProxy, ALBroker, ALModule
 from avRecording import VideoRecorder,AudioRecorder,start_audio_recording,start_AVrecording,start_video_recording,file_manager,stop_AVrecording
-from movimentos import beijos,comemorar,concordar,conversar,danca_aniversario,discordar,empatia,palmas,tchau,toca_aqui
+from movimentos import beijos,comemorar,concordar,conversar,duvida,discordar,empatia,palmas,tchau,toca_aqui
 import vision_definitions
 import sys
 import sqlite3
@@ -265,7 +265,7 @@ class Ui_MainWindow(object):
         self.btn1x3.clicked.connect(self.conversar)
         self.btn2x1.clicked.connect(self.comemorar)
         self.btn2x2.clicked.connect(self.empatia)
-        self.btn2x3.clicked.connect(self.dancaAni)
+        self.btn2x3.clicked.connect(self.duvida)
         self.btn3x1.clicked.connect(self.funcSentarLevantar)
         self.btn3x2.clicked.connect(self.palmas)
         self.btn3x3.clicked.connect(self.tocaqui)
@@ -294,16 +294,16 @@ class Ui_MainWindow(object):
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
         self.BtnEnc.setText(_translate("MainWindow", "Encerrar Sessão", None))
         self.Movimentos.setTitle(_translate("MainWindow", "Movimentos", None))
-        self.btn1x1.setText(_translate("MainWindow", "Sim", None))
-        self.btn1x2.setText(_translate("MainWindow", "Não", None))
+        self.btn1x1.setText(_translate("MainWindow", "Concordar", None))
+        self.btn1x2.setText(_translate("MainWindow", "Discordar", None))
         self.btn2x2.setText(_translate("MainWindow", "Empatia", None))
         self.btn2x1.setText(_translate("MainWindow", "Comemorar", None))
         self.btn1x3.setText(_translate("MainWindow", "Conversar", None))
         self.btn3x3.setText(_translate("MainWindow", "Toca aqui", None))
-        self.btn2x3.setText(_translate("MainWindow", "Dança de aniversário", None))
+        self.btn2x3.setText(_translate("MainWindow", "Duvida", None))
         self.btn3x2.setText(_translate("MainWindow", "Palmas", None))
         self.btn3x1.setText(_translate("MainWindow", "Sentar", None))
-        self.btn4x1.setText(_translate("MainWindow", "Tchau", None))
+        self.btn4x1.setText(_translate("MainWindow", "Oi/Tchau", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
         self.Avisos.setTitle(_translate("MainWindow", "Avisos", None))
         item = self.tableWidget.horizontalHeaderItem(0)
@@ -607,8 +607,8 @@ class Ui_MainWindow(object):
         self.movimento(comemorar.comemorar)
     def empatia(self):
         self.movimento(empatia.empatia)
-    def dancaAni(self):
-        self.movimento(danca_aniversario.birthday_dance)
+    def duvida(self):
+        self.movimento(duvida.duvida)
     def palmas(self):
         self.movimento(palmas.palmas)
     def tocaqui(self):
