@@ -2,4 +2,8 @@
   <qresource prefix="teste">
     <file>02.png</file>
   </qresource>
+  <qresource prefix="newPrefix">
+    <file>dir.png</file>
+    <file>LogoLars.png</file>
+  </qresource>
 </RCC>

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog
-from PyQt4.QtCore import QTimer
+from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget
 from naoqi import ALProxy, ALBroker, ALModule
 from avRecording import VideoRecorder,AudioRecorder,start_audio_recording,start_AVrecording,start_video_recording,file_manager,stop_AVrecording
 from movimentos import beijos,comemorar,concordar,conversar,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
@@ -14,6 +13,7 @@ import threading
 import pysftp
 import subprocess
 
+
 width , height = pyautogui.size()
 
 if height < 1080:
@@ -25,8 +25,8 @@ if height < 1080:
 else:
     height = 950
     hMovimentos = 300
-    posYEMG = 570
-    posYAVISOS = 625 
+    posYEMG = 560
+    posYAVISOS = 610
 
 
 try:
@@ -62,6 +62,7 @@ for i,j in lastIp:
     last_ip = str(j)      
 conn.close()
 PORT = 9559
+robotIP = None
 class Ui_MainWindow(object):
     def __init__(self):
         self.val_ip = ""
@@ -76,9 +77,31 @@ class Ui_MainWindow(object):
         MainWindow.resize(400, height)
         MainWindow.setMinimumSize(QtCore.QSize(400, height))
         MainWindow.setMaximumSize(QtCore.QSize(400, height))
-        self.centralwidget = QtGui.QWidget(MainWindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        MainWindow.setWindowIcon(icon)
         
+        self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setObjectName(_fromUtf8("menubar"))
+        self.menuMenu = QtGui.QMenu(self.menubar)
+        self.menuMenu.setObjectName(_fromUtf8("menuMenu"))
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        MainWindow.setStatusBar(self.statusbar)
+        self.actionChat = QtGui.QAction(MainWindow)
+        self.actionChat.setObjectName(_fromUtf8("actionChat"))
+        self.actionSobre = QtGui.QAction(MainWindow)
+        self.actionSobre.setObjectName(_fromUtf8("actionSobre"))
+        self.menuMenu.addAction(self.actionChat)
+        self.menuMenu.addAction(self.actionSobre)        
+        self.menubar.addAction(self.menuMenu.menuAction())
+        self.actionChat.triggered.connect(self.chatwin)      
+             
         self.Menu = QtGui.QGroupBox(self.centralwidget)
         self.Menu.setGeometry(QtCore.QRect(10, 10, 381, 230))
         self.Menu.setMinimumSize(QtCore.QSize(0, 0))
@@ -88,19 +111,19 @@ class Ui_MainWindow(object):
         
         self.label_id = QtGui.QLabel(self.Menu)
         self.label_id.setGeometry(QtCore.QRect(10, 27, 50, 23))
-        self.label_id.setMinimumSize(QtCore.QSize(50, 23))
-        
+        self.label_id.setMinimumSize(QtCore.QSize(50, 23))        
         self.label_id.setObjectName(_fromUtf8("label_id"))
+        
         self.inputIDC = QtGui.QLineEdit(self.Menu)
         self.inputIDC.setGeometry(QtCore.QRect(70, 27, 250, 20))
-        self.inputIDC.setMinimumSize(QtCore.QSize(260, 20))
-        
+        self.inputIDC.setMinimumSize(QtCore.QSize(260, 20))        
         self.inputIDC.setObjectName(_fromUtf8("inputIDC"))
+        
         self.inputIP = QtGui.QLineEdit(self.Menu)
         self.inputIP.setGeometry(QtCore.QRect(70, 55, 250, 20))
-        self.inputIP.setMinimumSize(QtCore.QSize(260, 20))
-        
+        self.inputIP.setMinimumSize(QtCore.QSize(260, 20))        
         self.inputIP.setObjectName(_fromUtf8("inputIP"))
+        
         self.inputSessao = QtGui.QLineEdit(self.Menu)
         self.inputSessao.setEnabled(True)
         self.inputSessao.setGeometry(QtCore.QRect(70, 110, 250, 20))
@@ -109,6 +132,7 @@ class Ui_MainWindow(object):
         self.inputSessao.setText(_fromUtf8(""))
         self.inputSessao.setReadOnly(True)
         self.inputSessao.setObjectName(_fromUtf8("inputSessao"))
+        
         self.inputDir = QtGui.QLineEdit(self.Menu)
         self.inputDir.setEnabled(True)
         self.inputDir.setGeometry(QtCore.QRect(70, 83, 250, 20))
@@ -116,45 +140,54 @@ class Ui_MainWindow(object):
         self.inputDir.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
         self.inputDir.setText(_fromUtf8(""))
         self.inputDir.setReadOnly(True)
-        self.inputDir.setObjectName(_fromUtf8("inputSessao"))
+        self.inputDir.setObjectName(_fromUtf8("inputDir"))
+        
         self.label_Ip = QtGui.QLabel(self.Menu)
         self.label_Ip.setGeometry(QtCore.QRect(10, 55, 50, 23))
         self.label_Ip.setMinimumSize(QtCore.QSize(50, 23))
-       
         self.label_Ip.setObjectName(_fromUtf8("label_Ip"))
+        
         self.label_sessao = QtGui.QLabel(self.Menu)
         self.label_sessao.setGeometry(QtCore.QRect(10, 110, 50, 23))
         self.label_sessao.setMinimumSize(QtCore.QSize(50, 23))
         self.label_sessao.setMaximumSize(QtCore.QSize(80, 23))
         self.label_sessao.setObjectName(_fromUtf8("label_sessao"))
+        
         self.label_dir = QtGui.QLabel(self.Menu)
         self.label_dir.setGeometry(QtCore.QRect(10,83, 50, 23))
         self.label_dir.setMinimumSize(QtCore.QSize(50, 23))
         self.label_dir.setMaximumSize(QtCore.QSize(80, 23))
         self.label_dir.setObjectName(_fromUtf8("label_dir"))
+        
         self.BtnConn = QtGui.QPushButton(self.Menu)
         self.BtnConn.setGeometry(QtCore.QRect(70, 145, 265, 23))
         self.BtnConn.setMinimumSize(QtCore.QSize(265, 0))        
         self.BtnConn.setObjectName(_fromUtf8("BtnConn"))
+        
         self.BtnDir = QtGui.QPushButton(self.Menu)
         self.BtnDir.setGeometry(QtCore.QRect(336, 80, 250, 20))
         self.BtnDir.setMinimumSize(QtCore.QSize(24, 25))
         self.BtnDir.setMaximumSize(QtCore.QSize(25, 25))
         self.BtnDir.setObjectName(_fromUtf8("BtnConn"))
         self.BtnDir.setStyleSheet(_fromUtf8("background-image: url(imagens/dir.png);background-repeat: no-repeat"))
+        
         self.BtnEnc = QtGui.QPushButton(self.Menu)
         self.BtnEnc.setGeometry(QtCore.QRect(70, 180, 265, 23))
         self.BtnEnc.setMinimumSize(QtCore.QSize(265, 0))
         self.BtnEnc.setMaximumSize(QtCore.QSize(350, 25))
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
+        self.BtnEnc.setEnabled(False)
+        
         self.Status = QtGui.QLabel(self.Menu)
         self.Status.setEnabled(False)
         self.Status.setGeometry(QtCore.QRect(340, 145, 25, 21))
+        
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Status.sizePolicy().hasHeightForWidth())
-        self.Status.setSizePolicy(sizePolicy)
+        
+        self.Status.setSizePolicy(sizePolicy)        
         self.Status.setMaximumSize(QtCore.QSize(30, 30))
         self.Status.setMouseTracking(True)
         self.Status.setStyleSheet(_fromUtf8("background: #fff"))
@@ -164,51 +197,65 @@ class Ui_MainWindow(object):
         self.Movimentos = QtGui.QGroupBox(self.centralwidget)
         self.Movimentos.setGeometry(QtCore.QRect(10, 250, 381, hMovimentos))
         self.Movimentos.setObjectName(_fromUtf8("Movimentos"))
+        
         self.gridLayout_2 = QtGui.QGridLayout(self.Movimentos)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        
         self.btn1x1 = QtGui.QPushButton(self.Movimentos)
         self.btn1x1.setObjectName(_fromUtf8("btn1x1"))
         self.gridLayout_2.addWidget(self.btn1x1, 0, 3, 1, 1)
+        
         self.btn1x2 = QtGui.QPushButton(self.Movimentos)
         self.btn1x2.setObjectName(_fromUtf8("btn1x2"))
         self.gridLayout_2.addWidget(self.btn1x2, 0, 6, 1, 1)
+        
         self.btn2x2 = QtGui.QPushButton(self.Movimentos)
         self.btn2x2.setObjectName(_fromUtf8("btn2x2"))
         self.gridLayout_2.addWidget(self.btn2x2, 1, 6, 1, 1)
+        
         self.btn2x1 = QtGui.QPushButton(self.Movimentos)
         self.btn2x1.setObjectName(_fromUtf8("btn2x1"))
         self.gridLayout_2.addWidget(self.btn2x1, 1, 3, 1, 1)
+        
         self.btn1x3 = QtGui.QPushButton(self.Movimentos)
         self.btn1x3.setObjectName(_fromUtf8("btn1x3"))
         self.gridLayout_2.addWidget(self.btn1x3, 0, 8, 1, 1)
+        
         self.btn3x3 = QtGui.QPushButton(self.Movimentos)
         self.btn3x3.setObjectName(_fromUtf8("btn3x3"))
         self.gridLayout_2.addWidget(self.btn3x3, 2, 8, 1, 1)
+        
         self.btn2x3 = QtGui.QPushButton(self.Movimentos)
         self.btn2x3.setObjectName(_fromUtf8("btn2x3"))
         self.gridLayout_2.addWidget(self.btn2x3, 1, 8, 1, 1)
+        
         self.btn3x2 = QtGui.QPushButton(self.Movimentos)
         self.btn3x2.setObjectName(_fromUtf8("btn3x2"))
         self.gridLayout_2.addWidget(self.btn3x2, 2, 6, 1, 1)
+        
         self.btn3x1 = QtGui.QPushButton(self.Movimentos)
         self.btn3x1.setObjectName(_fromUtf8("btn3x1"))
         self.gridLayout_2.addWidget(self.btn3x1, 2, 3, 1, 1)
+        
         self.btn4x1 = QtGui.QPushButton(self.Movimentos)
         self.btn4x1.setObjectName(_fromUtf8("btn4x1"))
         self.gridLayout_2.addWidget(self.btn4x1, 3, 3, 1, 1)
+        
         self.btn4x2 = QtGui.QPushButton(self.Movimentos)
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
         self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)
+        
         self.btn4x3 = QtGui.QPushButton(self.Movimentos)
         self.btn4x3.setObjectName(_fromUtf8("btn4x3"))
         self.gridLayout_2.addWidget(self.btn4x3, 3, 8, 1, 1)
+        
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
-        self.Avisos.setGeometry(QtCore.QRect(9, posYAVISOS, 380, 330))
-        
+        self.Avisos.setGeometry(QtCore.QRect(9, posYAVISOS, 380, 330))        
         self.Avisos.setMaximumSize(QtCore.QSize(16777215, 300))
         self.Avisos.setAlignment(QtCore.Qt.AlignCenter)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
+        
         self.logo_cti = QtGui.QLabel(self.Avisos)
         self.logo_cti.setGeometry(QtCore.QRect(10, 240, 85, 50))
         self.logo_cti.setMinimumSize(QtCore.QSize(85, 50))
@@ -217,6 +264,7 @@ class Ui_MainWindow(object):
         self.logo_cti.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoCTIcampinas.jpeg")))
         self.logo_cti.setScaledContents(True)
         self.logo_cti.setObjectName(_fromUtf8("logo_cti"))
+        
         self.tableWidget = QtGui.QTableWidget(self.Avisos)
         self.tableWidget.setGeometry(QtCore.QRect(10, 15, 361, 211))
         self.tableWidget.setMinimumSize(QtCore.QSize(361, 211))
@@ -239,6 +287,7 @@ class Ui_MainWindow(object):
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setHighlightSections(False)
+        
         self.logo_icmc = QtGui.QLabel(self.Avisos)
         self.logo_icmc.setGeometry(QtCore.QRect(290, 240, 85, 50))
         self.logo_icmc.setMinimumSize(QtCore.QSize(85, 50))
@@ -247,6 +296,7 @@ class Ui_MainWindow(object):
         self.logo_icmc.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoICMC.png")))
         self.logo_icmc.setScaledContents(True)
         self.logo_icmc.setObjectName(_fromUtf8("logo_icmc"))
+        
         self.logo_lar = QtGui.QLabel(self.Avisos)
         self.logo_lar.setGeometry(QtCore.QRect(200, 240, 85, 50))
         self.logo_lar.setMinimumSize(QtCore.QSize(85, 50))
@@ -255,6 +305,7 @@ class Ui_MainWindow(object):
         self.logo_lar.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoLars.png")))
         self.logo_lar.setScaledContents(True)
         self.logo_lar.setObjectName(_fromUtf8("logo_lar"))
+        
         self.logo_Unesp = QtGui.QLabel(self.Avisos)
         self.logo_Unesp.setGeometry(QtCore.QRect(110, 240, 85, 50))
         self.logo_Unesp.setMinimumSize(QtCore.QSize(85, 50))
@@ -263,6 +314,7 @@ class Ui_MainWindow(object):
         self.logo_Unesp.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/unesp-full-center.png")))
         self.logo_Unesp.setScaledContents(True)
         self.logo_Unesp.setObjectName(_fromUtf8("logo_Unesp"))
+        
         self.logo_cti.raise_()
         self.logo_icmc.raise_()
         self.logo_lar.raise_()
@@ -275,8 +327,13 @@ class Ui_MainWindow(object):
         self.EMG.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.EMG.setStyleSheet(_fromUtf8("color: rgb(255, 255, 0);\n""background-color: rgb(255, 0, 0)"))
         self.EMG.setObjectName(_fromUtf8("EMG"))
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.BtnEnc.setEnabled(False)
+        MainWindow.setCentralWidget(self.centralwidget)        
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.EMG.setFont(font)
+        
+        
         
         #Botões Configurações
         self.BtnConn.clicked.connect(self.conexao)
@@ -300,6 +357,7 @@ class Ui_MainWindow(object):
         self.EMG.clicked.connect(self.desligar)
         
         
+        
         #Recupera o ultimo ip adicionado na lista.
         self.inputIP.setText(last_ip)
         #Cria uma lista para completar o id ou o ip
@@ -312,7 +370,10 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
     
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Projeto Proteger", None))
+        self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))
+        self.actionChat.setText(_translate("MainWindow", "Chat", None))
+        self.actionSobre.setText(_translate("MainWindow", "Sobre", None))
         self.Menu.setTitle(_translate("MainWindow", "Configurações", None))
         self.label_id.setText(_translate("MainWindow", "ID Criança", None))
         self.label_Ip.setText(_translate("MainWindow", "IP Robô", None))
@@ -339,7 +400,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Hora", None))
         item = self.tableWidget.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Mensagens", None))
-        self.EMG.setText(_translate("MainWindow", "EMERGÊNCIA", None))
+        self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))
     
     #Funções complementares
     def gera_id_sessao(self):
@@ -358,10 +419,10 @@ class Ui_MainWindow(object):
         conn.close()
     def conexao(self):
         try:
-            self.robotIP = self.setIP()
+            self.robotIP = self.setIP()[0]
             #self.nivelBateria()
             self.naoVision()
-            aviso = "AVISO: Conexão estabelecida com robô."
+            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+"."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Falha na conexão com robô."
@@ -401,6 +462,7 @@ class Ui_MainWindow(object):
     def desconectar(self):
         try:
             self.salva_log()
+            self.salva_Texto()
             self.jan.destroy()
             self.jan = None
             self.stopVideoRecording()
@@ -459,7 +521,8 @@ class Ui_MainWindow(object):
         conn.close()
     def setIP(self):
             self.val_ip = str(self.inputIP.text())
-            return self.val_ip
+            robotIP = self.val_ip            
+            return self.val_ip, robotIP
     def naoVision(self):
         if self.jan is None:
             IP = self.robotIP  # Replace here with your NaoQi's IP address.
@@ -486,7 +549,27 @@ class Ui_MainWindow(object):
         delete = "DELETE FROM Sessao;"
         cursor.execute(delete)
         conn.commit()
-        conn.close()         
+        conn.close()
+    def salva_Texto(self):
+        conn = sqlite3.connect('BdProteger.db')
+        cursor = conn.cursor()
+        query= "SELECT * FROM ChatSessao;"
+        cursor.execute(query)
+        #Gera arquivo com o log dos arquivos
+        listaLog = []
+        t = time.localtime()
+        val = str(_fromUtf8(self.inputIDC.text()))
+        nome = "Conv"+ str(time.strftime("%Y%m%d"+ "_" + val , t)) 
+        arq = open("Chat/"+ nome +".txt",'w')
+        for row, data in enumerate(cursor.fetchall()):              
+            listaLog.append(data)
+            arq.write(str(data) + "\n")
+        arq.close()
+        #Apaga os logs do banco de dados
+        delete = "DELETE FROM ChatSessao;"
+        cursor.execute(delete)
+        conn.commit()
+        conn.close()          
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
@@ -525,7 +608,6 @@ class Ui_MainWindow(object):
         timer.setSingleShot(False)
         timer.timeout.connect(self.nivelBateria)
         timer.start(10*60*1000)
-            
     def getNAOfiles(self):
         myHostname = str(self.setIP())
         myUsername = "nao"
@@ -569,7 +651,11 @@ class Ui_MainWindow(object):
         if folder != None:
             self.pasta = str(folder)
             self.inputDir.setText(self.pasta)
-            
+    def chatwin(self):
+        self.ChatWin = QWidget()
+        self.ui = Ui_ChatWindow(self.robotIP)
+        self.ui.setupUi(self.ChatWin)
+        self.ChatWin.show()       
     #Funções Movimentos
     def levantar(self):
         try:            
@@ -649,7 +735,137 @@ class Ui_MainWindow(object):
         self.movimento(tchau.tchau)
     def beijos(self):
         self.movimento(beijos.beijos)
+
+class Ui_ChatWindow(Ui_MainWindow):
+    def __init__(self, ip):
+        self.IP = ip
+        
+    def setupUi(self, ChatWindow):
+        ChatWindow.setObjectName(_fromUtf8("ChatWindow"))
+        ChatWindow.resize(420, 700)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(ChatWindow.sizePolicy().hasHeightForWidth())
+        ChatWindow.setSizePolicy(sizePolicy)
+        ChatWindow.setMinimumSize(QtCore.QSize(420, 700))
+        ChatWindow.setMaximumSize(QtCore.QSize(420, 700))
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/dir.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        ChatWindow.setWindowIcon(icon)
+        self.centralwidget = QtGui.QWidget(ChatWindow)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.groupBox = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox.setGeometry(QtCore.QRect(10, 10, 410, 661))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
+        self.groupBox.setSizePolicy(sizePolicy)
+        self.groupBox.setMinimumSize(QtCore.QSize(0, 0))
+        self.groupBox.setMaximumSize(QtCore.QSize(410, 700))
+        self.groupBox.setFlat(False)
+        self.groupBox.setCheckable(False)
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.tableWidgetChat = QtGui.QTableWidget(self.groupBox)
+        self.tableWidgetChat.setGeometry(QtCore.QRect(10, 20, 385, 531))
+        self.tableWidgetChat.setMinimumSize(QtCore.QSize(385, 500))
+        self.tableWidgetChat.setMaximumSize(QtCore.QSize(385, 700))
+        self.tableWidgetChat.setSizeIncrement(QtCore.QSize(0, 100))
+        self.tableWidgetChat.setBaseSize(QtCore.QSize(0, 100))
+        self.tableWidgetChat.setFrameShape(QtGui.QFrame.Box)
+        self.tableWidgetChat.setFrameShadow(QtGui.QFrame.Plain)
+        self.tableWidgetChat.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.tableWidgetChat.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.tableWidgetChat.setTabKeyNavigation(False)
+        self.tableWidgetChat.setProperty("showDropIndicator", False)
+        self.tableWidgetChat.setDragDropOverwriteMode(False)
+        self.tableWidgetChat.setAlternatingRowColors(True)
+        self.tableWidgetChat.setShowGrid(True)
+        self.tableWidgetChat.setGridStyle(QtCore.Qt.SolidLine)
+        self.tableWidgetChat.setCornerButtonEnabled(False)
+        self.tableWidgetChat.setRowCount(10)
+        self.tableWidgetChat.setColumnCount(2)
+        self.tableWidgetChat.setObjectName(_fromUtf8("tableWidgetChat"))
+        item = QtGui.QTableWidgetItem()
+        self.tableWidgetChat.setHorizontalHeaderItem(0, item)
+        item = QtGui.QTableWidgetItem()
+        self.tableWidgetChat.setHorizontalHeaderItem(1, item)
+        self.tableWidgetChat.horizontalHeader().setVisible(True)
+        self.tableWidgetChat.horizontalHeader().setCascadingSectionResizes(False)
+        self.tableWidgetChat.horizontalHeader().setHighlightSections(True)
+        self.tableWidgetChat.horizontalHeader().setMinimumSectionSize(70)
+        self.tableWidgetChat.horizontalHeader().setSortIndicatorShown(False)
+        self.tableWidgetChat.horizontalHeader().setStretchLastSection(True)
+        self.tableWidgetChat.verticalHeader().setVisible(False)
+        self.tableWidgetChat.verticalHeader().setCascadingSectionResizes(False)
+        self.tableWidgetChat.verticalHeader().setDefaultSectionSize(30)
+        self.tableWidgetChat.verticalHeader().setHighlightSections(False)
+        self.tableWidgetChat.verticalHeader().setMinimumSectionSize(19)
+        self.tableWidgetChat.verticalHeader().setSortIndicatorShown(False)
+        self.tableWidgetChat.verticalHeader().setStretchLastSection(False)
+        self.groupBox_2 = QtGui.QGroupBox(self.groupBox)
+        self.groupBox_2.setGeometry(QtCore.QRect(10, 560, 390, 81))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
+        self.groupBox_2.setSizePolicy(sizePolicy)
+        self.groupBox_2.setMaximumSize(QtCore.QSize(390, 81))
+        self.groupBox_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
+        
+        self.textChat = QtGui.QTextEdit(self.groupBox_2)
+        self.textChat.setGeometry(QtCore.QRect(10, 20, 300, 51))
+        self.textChat.setMaximumSize(QtCore.QSize(300, 51))
+        self.textChat.setObjectName(_fromUtf8("textChat"))
+        
+        self.btnEnviarChat = QtGui.QPushButton(self.groupBox_2)
+        self.btnEnviarChat.setGeometry(QtCore.QRect(320, 20, 60, 51))
+        self.btnEnviarChat.setMaximumSize(QtCore.QSize(60, 51))
+        self.btnEnviarChat.setObjectName(_fromUtf8("btnEnviarChat"))
+        
+        self.btnEnviarChat.clicked.connect(self.textToSpeech)
+
+        self.retranslateUi(ChatWindow)
+        QtCore.QMetaObject.connectSlotsByName(ChatWindow)
     
+    def textToSpeech(self):
+        self.msg = str(_fromUtf8(self.textChat.toPlainText()))   
+        print("Mensagem enviada: ",self.msg)
+        tts = ALProxy("ALTextToSpeech",self.IP,PORT)
+        
+        tts.say(self.msg)
+        self.SalvaTextoBD(self.msg)
+        self.textChat.setText("")
+    
+    def SalvaTextoBD(self,texto):
+        conn = sqlite3.connect('BdProteger.db')
+        
+        self.texto = texto
+        t = time.localtime()
+        Data = str(t.tm_mday) + "/" + str(t.tm_mon) + "/" + str(t.tm_year) 
+        Hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec) 
+        conn.execute("INSERT INTO ChatSessao (Data,Hora,Texto) VALUES(?,?,?);",(Data,Hora,self.texto))
+        conn.commit()
+        query ="SELECT Hora, Texto FROM ChatSessao ORDER BY ip DESC LIMIT 1"                
+        result = conn.execute(query)
+        for row, row_data in enumerate(result):
+            self.tableWidgetChat.insertRow(row)            
+            for col, data in enumerate(row_data):
+                self.tableWidgetChat.setItem(row,col, QTableWidgetItem(_fromUtf8(data) ))
+        self.tableWidgetChat.show()
+        conn.close()
+    def retranslateUi(self, ChatWindow):
+        ChatWindow.setWindowTitle(_translate("ChatWindow", "Chat - Opção Text to Speech (TTS)", None))
+        self.groupBox.setTitle(_translate("ChatWindow", "Conversa:", None))
+        item = self.tableWidgetChat.horizontalHeaderItem(0)
+        item.setText(_translate("ChatWindow", "Hora", None))
+        item = self.tableWidgetChat.horizontalHeaderItem(1)
+        item.setText(_translate("ChatWindow", "Mensagem", None))
+        self.groupBox_2.setTitle(_translate("ChatWindow", "Chat", None))
+        self.btnEnviarChat.setText(_translate("ChatWindow", "Enviar", None))
+   
 class ImageWidget(QWidget):
     """
     Tiny widget to display camera images from Naoqi.

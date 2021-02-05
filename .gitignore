@@ -8,3 +8,5 @@ Videos/
 .movimentos/
 *.db
 Reservas/
+*.sqbpro
+*.qrc
