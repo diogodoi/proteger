@@ -80,15 +80,23 @@ class Ui_MainWindow(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
+        MainWindow.setStyleSheet("""
+                        color: darkgreen;
+                        background-color: #FFF;
+                        border: None;                        
+""")
+       
         
         self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 40))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuMenu = QtGui.QMenu(self.menubar)
+        
         self.menuMenu.setObjectName(_fromUtf8("menuMenu"))
+        self.menuMenu.setStyleSheet("border-style:solid;border-width:0px 0px 3px3px")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -100,6 +108,10 @@ class Ui_MainWindow(object):
         self.menuMenu.addAction(self.actionChat)
         self.menuMenu.addAction(self.actionSobre)        
         self.menubar.addAction(self.menuMenu.menuAction())
+        self.menubar.setStyleSheet("""border-bottom: 5px groove green;
+                                   background-color:lightgrey;
+                                   """)
+        
         self.actionChat.triggered.connect(self.chatwin)      
              
         self.Menu = QtGui.QGroupBox(self.centralwidget)
@@ -107,12 +119,16 @@ class Ui_MainWindow(object):
         self.Menu.setMinimumSize(QtCore.QSize(0, 0))
         self.Menu.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.Menu.setObjectName(_fromUtf8("Menu"))
+        self.Menu.setStyleSheet("border-radius:10px;border:1px solid green")
     
         
         self.label_id = QtGui.QLabel(self.Menu)
         self.label_id.setGeometry(QtCore.QRect(10, 27, 50, 23))
         self.label_id.setMinimumSize(QtCore.QSize(50, 23))        
         self.label_id.setObjectName(_fromUtf8("label_id"))
+        self.label_id.setStyleSheet("border:None")
+        
+        
         
         self.inputIDC = QtGui.QLineEdit(self.Menu)
         self.inputIDC.setGeometry(QtCore.QRect(70, 27, 250, 20))
@@ -146,18 +162,21 @@ class Ui_MainWindow(object):
         self.label_Ip.setGeometry(QtCore.QRect(10, 55, 50, 23))
         self.label_Ip.setMinimumSize(QtCore.QSize(50, 23))
         self.label_Ip.setObjectName(_fromUtf8("label_Ip"))
+        self.label_Ip.setStyleSheet("border:None")
         
         self.label_sessao = QtGui.QLabel(self.Menu)
         self.label_sessao.setGeometry(QtCore.QRect(10, 110, 50, 23))
         self.label_sessao.setMinimumSize(QtCore.QSize(50, 23))
         self.label_sessao.setMaximumSize(QtCore.QSize(80, 23))
         self.label_sessao.setObjectName(_fromUtf8("label_sessao"))
+        self.label_sessao.setStyleSheet("border:None")
         
         self.label_dir = QtGui.QLabel(self.Menu)
         self.label_dir.setGeometry(QtCore.QRect(10,83, 50, 23))
         self.label_dir.setMinimumSize(QtCore.QSize(50, 23))
         self.label_dir.setMaximumSize(QtCore.QSize(80, 23))
         self.label_dir.setObjectName(_fromUtf8("label_dir"))
+        self.label_dir.setStyleSheet("border:None")
         
         self.BtnConn = QtGui.QPushButton(self.Menu)
         self.BtnConn.setGeometry(QtCore.QRect(70, 145, 265, 23))
@@ -169,7 +188,7 @@ class Ui_MainWindow(object):
         self.BtnDir.setMinimumSize(QtCore.QSize(24, 25))
         self.BtnDir.setMaximumSize(QtCore.QSize(25, 25))
         self.BtnDir.setObjectName(_fromUtf8("BtnConn"))
-        self.BtnDir.setStyleSheet(_fromUtf8("background-image: url(imagens/dir.png);background-repeat: no-repeat"))
+        self.BtnDir.setStyleSheet(_fromUtf8("background-image: url(imagens/dir.png);background-repeat: no-repeat;border:None;border-radius:0px"))
         
         self.BtnEnc = QtGui.QPushButton(self.Menu)
         self.BtnEnc.setGeometry(QtCore.QRect(70, 180, 265, 23))
@@ -197,6 +216,7 @@ class Ui_MainWindow(object):
         self.Movimentos = QtGui.QGroupBox(self.centralwidget)
         self.Movimentos.setGeometry(QtCore.QRect(10, 250, 381, hMovimentos))
         self.Movimentos.setObjectName(_fromUtf8("Movimentos"))
+        self.Movimentos.setStyleSheet("border:2px dotted green;border-radius:15px")
         
         self.gridLayout_2 = QtGui.QGridLayout(self.Movimentos)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
