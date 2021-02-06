@@ -14,6 +14,7 @@ import pysftp
 import subprocess
 
 
+
 width , height = pyautogui.size()
 
 if height < 1080:
@@ -83,9 +84,7 @@ class Ui_MainWindow(object):
         MainWindow.setStyleSheet("""
                         color: darkgreen;
                         background-color: #FFF;
-                        border: None;                        
-""")
-       
+                        border: None;  """)
         
         self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
@@ -120,15 +119,12 @@ class Ui_MainWindow(object):
         self.Menu.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.Menu.setObjectName(_fromUtf8("Menu"))
         self.Menu.setStyleSheet("border-radius:10px;border:1px solid green")
-    
         
         self.label_id = QtGui.QLabel(self.Menu)
         self.label_id.setGeometry(QtCore.QRect(10, 27, 50, 23))
         self.label_id.setMinimumSize(QtCore.QSize(50, 23))        
         self.label_id.setObjectName(_fromUtf8("label_id"))
         self.label_id.setStyleSheet("border:None")
-        
-        
         
         self.inputIDC = QtGui.QLineEdit(self.Menu)
         self.inputIDC.setGeometry(QtCore.QRect(70, 27, 250, 20))
@@ -340,6 +336,7 @@ class Ui_MainWindow(object):
         self.logo_lar.raise_()
         self.logo_Unesp.raise_()
         self.tableWidget.raise_()
+        
         ### BOTAO EMERGENCIA
         self.EMG = QtGui.QPushButton(self.centralwidget)
         self.EMG.setGeometry(QtCore.QRect(10, posYEMG, 380, 40))
@@ -352,8 +349,6 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.EMG.setFont(font)
-        
-        
         
         #Botões Configurações
         self.BtnConn.clicked.connect(self.conexao)
@@ -485,6 +480,7 @@ class Ui_MainWindow(object):
             self.salva_Texto()
             self.jan.destroy()
             self.jan = None
+            self.ChatWin.destroy()
             self.stopVideoRecording()
             self.stopAudioRecording()
         except BaseException:
@@ -624,10 +620,7 @@ class Ui_MainWindow(object):
         else:
             aviso = "Atenção: Nível da bateria "+ status+"%."
             self.enviarAviso(str(aviso))            
-        timer = QTimer()
-        timer.setSingleShot(False)
-        timer.timeout.connect(self.nivelBateria)
-        timer.start(10*60*1000)
+
     def getNAOfiles(self):
         myHostname = str(self.setIP())
         myUsername = "nao"
@@ -674,7 +667,7 @@ class Ui_MainWindow(object):
     def chatwin(self):
         self.ChatWin = QWidget()
         self.ui = Ui_ChatWindow(self.robotIP)
-        self.ui.setupUi(self.ChatWin)
+        self.ui.setupUi(self.ChatWin)        
         self.ChatWin.show()       
     #Funções Movimentos
     def levantar(self):
@@ -730,8 +723,7 @@ class Ui_MainWindow(object):
         except BaseException:
             aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
             self.enviarAviso(str(aviso))
-    
-    
+
     def concordar(self):
         self.movimento(concordar.sim)
     def discordar(self):
@@ -835,7 +827,7 @@ class Ui_ChatWindow(Ui_MainWindow):
         self.groupBox_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
         
-        self.textChat = QtGui.QTextEdit(self.groupBox_2)
+        self.textChat = QtGui.QLineEdit(self.groupBox_2)
         self.textChat.setGeometry(QtCore.QRect(10, 20, 300, 51))
         self.textChat.setMaximumSize(QtCore.QSize(300, 51))
         self.textChat.setObjectName(_fromUtf8("textChat"))
@@ -851,17 +843,19 @@ class Ui_ChatWindow(Ui_MainWindow):
         QtCore.QMetaObject.connectSlotsByName(ChatWindow)
     
     def textToSpeech(self):
-        self.msg = str(_fromUtf8(self.textChat.toPlainText()))   
-        print("Mensagem enviada: ",self.msg)
+        self.msg = self.textChat.text()        
+        self.msg = unicode(self.msg).encode('utf-8')
+                
         tts = ALProxy("ALTextToSpeech",self.IP,PORT)
+        tts.setLanguage("Brazilian")
         
-        tts.say(self.msg)
+        tts.post.say(self.msg)
         self.SalvaTextoBD(self.msg)
-        self.textChat.setText("")
+        self.textChat.clear()
     
     def SalvaTextoBD(self,texto):
         conn = sqlite3.connect('BdProteger.db')
-        
+        conn.text_factory = str
         self.texto = texto
         t = time.localtime()
         Data = str(t.tm_mday) + "/" + str(t.tm_mon) + "/" + str(t.tm_year) 
