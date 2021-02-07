@@ -1,1 +1,0 @@
-(321, u'6/1/2021', u'20:23:29', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')

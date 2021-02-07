@@ -12,6 +12,7 @@ import pyautogui
 import threading
 import pysftp
 import subprocess
+import random
 
 
 
@@ -71,6 +72,8 @@ class Ui_MainWindow(object):
         self.jan = None
         self.pasta = ""
         self.robotIP = "" 
+        conn = sqlite3.connect('BdProteger.db')
+        conn.close()
 
     def setupUi(self, MainWindow,height=height):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
@@ -187,11 +190,21 @@ class Ui_MainWindow(object):
         self.BtnDir.setStyleSheet(_fromUtf8("background-image: url(imagens/dir.png);background-repeat: no-repeat;border:None;border-radius:0px"))
         
         self.BtnEnc = QtGui.QPushButton(self.Menu)
-        self.BtnEnc.setGeometry(QtCore.QRect(70, 180, 265, 23))
+        self.BtnEnc.setGeometry(QtCore.QRect(70, 200, 265, 23))
         self.BtnEnc.setMinimumSize(QtCore.QSize(265, 0))
         self.BtnEnc.setMaximumSize(QtCore.QSize(350, 25))
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
         self.BtnEnc.setEnabled(False)
+        
+        #BtnSalvar
+        # self.BtnNaoSave = QtGui.QPushButton(self.Menu)
+        # self.BtnNaoSave.setGeometry(QtCore.QRect(70, 170, 265, 23))
+        # self.BtnNaoSave.setMinimumSize(QtCore.QSize(265, 0))
+        # self.BtnNaoSave.setMaximumSize(QtCore.QSize(350, 25))
+        # self.BtnNaoSave.setObjectName(_fromUtf8("BtnEnc"))
+        # self.BtnNaoSave.setEnabled(False)
+        
+        # self.BtnWebCamSave.
         
         self.Status = QtGui.QLabel(self.Menu)
         self.Status.setEnabled(False)
@@ -476,24 +489,23 @@ class Ui_MainWindow(object):
             self.Status.setStyleSheet(_fromUtf8("background:#FF0000"))
     def desconectar(self):
         try:
-            self.salva_log()
-            self.salva_Texto()
-            self.jan.destroy()
-            self.jan = None
-            self.ChatWin.destroy()
             self.stopVideoRecording()
             self.stopAudioRecording()
         except BaseException:
-            aviso = "ERROR:Falha ao fechar janelas."
+            aviso = "ERROR:Falha na gravacao do NAO"
             self.enviarAviso(aviso)
-        try:
-            
-            NAOFILES = threading.Thread(target=self.getNAOfiles)
-            NAOFILES.start() 
+        try:            
+            getNAOfiles = threading.Thread(target=self.getNAOfiles)
+            getNAOfiles.start()          
             aviso = "AVISO:Video NAO salvo com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR:Não foi possível salvar o video do NAO."
+            self.enviarAviso(aviso)
+        try:
+            self.salva_Texto()
+        except BaseException:
+            aviso = "ERROR:Falha ao salvar chat."
             self.enviarAviso(aviso)
         try:
             nomeSessao = self.gera_id_sessao()
@@ -503,6 +515,18 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Não foi possível salvar o video da WebCam."
+            self.enviarAviso(aviso)
+        try:            
+            self.jan.destroy()
+            self.jan = None            
+            self.ChatWin.destroy()
+        except BaseException:
+            aviso = "ERROR:Falha ao fechar janelas."
+            self.enviarAviso(aviso)        
+        try:
+            self.salva_log()
+        except BaseException:
+            aviso = "ERROR:Falha ao salvar log."
             self.enviarAviso(aviso) 
         try:           
             #self.desligar()
@@ -524,9 +548,11 @@ class Ui_MainWindow(object):
         self.aviso = aviso
         t = time.localtime()
         Data = str(t.tm_mday) + "/" + str(t.tm_mon) + "/" + str(t.tm_year) 
-        hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec) 
+        hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec)
         conn.execute("INSERT INTO Sessao (Data,Hora,Aviso) VALUES(?,?,?);",(Data,hora,self.aviso))
         conn.commit()
+        
+        # conn = sqlite3.connect('BdProteger.db')
         query ="SELECT Hora, Aviso FROM Sessao ORDER BY ip DESC LIMIT 1"                
         result = conn.execute(query)
         for row, row_data in enumerate(result):
@@ -574,8 +600,9 @@ class Ui_MainWindow(object):
         #Gera arquivo com o log dos arquivos
         listaLog = []
         t = time.localtime()
+        
         val = str(_fromUtf8(self.inputIDC.text()))
-        nome = "Conv"+ str(time.strftime("%Y%m%d"+ "_" + val , t)) 
+        nome = "Chat"+ str(time.strftime("%Y%m%d"+ "_" + val , t)) 
         arq = open("Chat/"+ nome +".txt",'w')
         for row, data in enumerate(cursor.fetchall()):              
             listaLog.append(data)
@@ -837,6 +864,8 @@ class Ui_ChatWindow(Ui_MainWindow):
         self.btnEnviarChat.setMaximumSize(QtCore.QSize(60, 51))
         self.btnEnviarChat.setObjectName(_fromUtf8("btnEnviarChat"))
         
+        self.textChat.returnPressed.connect(self.textToSpeech)        
+        
         self.btnEnviarChat.clicked.connect(self.textToSpeech)
 
         self.retranslateUi(ChatWindow)
@@ -848,6 +877,8 @@ class Ui_ChatWindow(Ui_MainWindow):
                 
         tts = ALProxy("ALTextToSpeech",self.IP,PORT)
         tts.setLanguage("Brazilian")
+        tts.setParameter("speed", 65)
+        tts.setParameter("pitchShift", 1.4)
         
         tts.post.say(self.msg)
         self.SalvaTextoBD(self.msg)
@@ -859,8 +890,8 @@ class Ui_ChatWindow(Ui_MainWindow):
         self.texto = texto
         t = time.localtime()
         Data = str(t.tm_mday) + "/" + str(t.tm_mon) + "/" + str(t.tm_year) 
-        Hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec) 
-        conn.execute("INSERT INTO ChatSessao (Data,Hora,Texto) VALUES(?,?,?);",(Data,Hora,self.texto))
+        hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec) 
+        conn.execute("INSERT INTO ChatSessao (Data,Hora,Texto) VALUES(?,?,?);",(Data,hora,self.texto))
         conn.commit()
         query ="SELECT Hora, Texto FROM ChatSessao ORDER BY ip DESC LIMIT 1"                
         result = conn.execute(query)

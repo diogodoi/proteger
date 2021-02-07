@@ -1,3 +1,0 @@
-(341, u'14/1/2021', u'14:30:12', u'ERRO: Falha na conex\xe3o com o rob\xf4.')
-(342, u'14/1/2021', u'14:30:47', u'ERRO: Falha na conex\xe3o com a WebCam.')
-(343, u'14/1/2021', u'14:30:47', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')

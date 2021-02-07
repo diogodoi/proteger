@@ -1,4 +1,0 @@
-(687, u'1/2/2021', u'16:38:25', u'ERRO: Falha na conex\xe3o com o rob\xf4.')
-(688, u'1/2/2021', u'18:10:57', u'Aviso: Conex\xe3o feita com o rob\xf4.')
-(689, u'1/2/2021', u'18:11:2', u'AVISO: Conex\xe3o feita com webcam.')
-(690, u'1/2/2021', u'18:11:3', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')

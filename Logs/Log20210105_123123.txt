@@ -1,2 +1,0 @@
-(290, u'5/1/2021', u'21:31:24', u'AVISO: Sess\xe3o encerrada com sucesso.')
-(291, u'5/1/2021', u'21:32:27', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')

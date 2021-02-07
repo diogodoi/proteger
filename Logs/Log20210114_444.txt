@@ -1,2 +1,0 @@
-(389, u'14/1/2021', u'16:24:22', u'ERRO: Falha na conex\xe3o com o rob\xf4.')
-(390, u'14/1/2021', u'16:32:26', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')

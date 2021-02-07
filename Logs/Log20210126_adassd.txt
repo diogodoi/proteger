@@ -1,3 +1,0 @@
-(519, u'26/1/2021', u'15:19:13', u'AVISO: Sess\xe3o encerrada com sucesso.')
-(520, u'26/1/2021', u'15:19:41', u'AVISO: A conex\xe3o foi estabelecida com o rob\xf4.')
-(521, u'26/1/2021', u'15:19:51', u'AVISO: Comando enviado com sucesso.')

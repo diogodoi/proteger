@@ -1,1 +1,0 @@
-(795, u'2/2/2021', u'9:50:32', u'ERROR: Falha na conex\xe3o com o rob\xf4.')
