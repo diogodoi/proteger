@@ -4,8 +4,8 @@ from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainte
 
 from naoqi import ALProxy, ALBroker, ALModule
 from avRecording import VideoRecorder,AudioRecorder,start_audio_recording,start_AVrecording,start_video_recording,file_manager,stop_AVrecording
-from movimentos import beijos,comemorar,concordar,conversar,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
-from movimentos import focus_cabeca
+from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
+#from movimentos import focus_cabeca
 import vision_definitions
 import sys
 import sqlite3
@@ -28,7 +28,7 @@ if height < 1080:
     
 else:
     height = 950
-    hMovimentos = 300
+    hMovimentos = 540
     posYEMG = 560
     posYAVISOS = 615
 
@@ -63,7 +63,13 @@ for i,j in listaIp:
 cursor.execute("SELECT * FROM IpRobot ORDER BY id DESC LIMIT 1")
 lastIp = cursor.fetchall()
 for i,j in lastIp:
-    last_ip = str(j)      
+    last_ip = str(j)
+# cursor.execute("SELECT * FROM AutoComplete")
+# dicio = cursor.fetchall()
+# l_dicio = []
+# for i in dicio:
+#     i = unicode(i)    
+#     l_dicio.append(i)   
 conn.close()
 PORT = 9559
 class Ui_MainWindow(object):
@@ -94,8 +100,7 @@ class Ui_MainWindow(object):
                         border-radius:15px;     
                           """)        
         MainWindow.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-           
-        
+
         self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         
@@ -115,8 +120,7 @@ class Ui_MainWindow(object):
         self.menuMenu.addAction(self.actionSobre)  
               
         self.menubar.addAction(self.menuMenu.menuAction())
-                
-        
+
         #Configurações
         self.Menu = QtGui.QGroupBox(self.centralwidget)
         self.Menu.setGeometry(QtCore.QRect(10, 10, 400, 230))
@@ -217,61 +221,10 @@ class Ui_MainWindow(object):
         self.BtnNaoSave.setEnabled(True)
         self.BtnNaoSave.setStyleSheet("border:None;")
         self.BtnNaoSave.clicked.connect(self.getNAOfiles)
-        
-        #BOX Botoes Auxiliar
-        
-        self.groupBoxAux = QtGui.QGroupBox(self.centralwidget)
-        self.groupBoxAux.setGeometry(QtCore.QRect(420, 10, 420, 230))        
-        self.groupBoxAux.setStyleSheet("""
-                                       border:2px solid darkgreen;
-                                       border-radius:15px
-                                       """)
-        
-        self.gridLayoutAux = QtGui.QGridLayout(self.groupBoxAux)
-        self.gridLayoutAux.setObjectName(_fromUtf8("gridLayoutAux")) 
-        
-        self.btnA1x1 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA1x1.setObjectName(_fromUtf8("btnA1x1"))
-        self.gridLayoutAux.addWidget(self.btnA1x1, 0, 3, 1, 1)
-        
-        self.btnA1x2 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA1x2.setObjectName(_fromUtf8("btnA1x2"))
-        self.gridLayoutAux.addWidget(self.btnA1x2, 0, 6, 1, 1)
-        
-        self.btnA1x3 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA1x3.setObjectName(_fromUtf8("btnA1x2"))
-        self.gridLayoutAux.addWidget(self.btnA1x3, 0, 9, 1, 1)
-        
-        self.btnA2x1 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA2x1.setObjectName(_fromUtf8("btnA2x1"))
-        self.gridLayoutAux.addWidget(self.btnA2x1, 1, 3, 1, 1)
-        
-        self.btnA2x2 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA2x2.setObjectName(_fromUtf8("btnA2x2"))
-        self.gridLayoutAux.addWidget(self.btnA2x2, 1, 6, 1, 1)
-        
-        self.btnA2x3 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA2x3.setObjectName(_fromUtf8("btnA2x3"))
-        self.gridLayoutAux.addWidget(self.btnA2x3, 1, 9, 1, 1)
-        
-        self.btnA3x1 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA3x1.setObjectName(_fromUtf8("btnA3x1"))
-        self.gridLayoutAux.addWidget(self.btnA3x1, 2, 3, 1, 1)
-        
-        self.btnA3x2 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA3x2.setObjectName(_fromUtf8("btnA3x2"))
-        self.gridLayoutAux.addWidget(self.btnA3x2, 2, 6, 1, 1)
-        
-        self.btnA3x3 = QtGui.QPushButton(self.groupBoxAux)
-        self.btnA3x3.setObjectName(_fromUtf8("btnA3x2"))
-        self.gridLayoutAux.addWidget(self.btnA3x3, 2, 9, 1, 1)
 
-        
-        
-        
         #### BOX MOVIMENTOS
         self.Movimentos = QtGui.QGroupBox(self.centralwidget)
-        self.Movimentos.setGeometry(QtCore.QRect(10, 250, 400, hMovimentos))
+        self.Movimentos.setGeometry(QtCore.QRect(420, 10, 400, hMovimentos))
         self.Movimentos.setObjectName(_fromUtf8("Movimentos"))
         self.Movimentos.setStyleSheet("""border:2px dotted darkgreen;
                                         border-radius:15px;
@@ -401,7 +354,7 @@ class Ui_MainWindow(object):
         
         #Chat
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox.setGeometry(QtCore.QRect(420, 250, 420, 300))
+        self.groupBox.setGeometry(QtCore.QRect(10, 250, 400, 300))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -471,7 +424,8 @@ class Ui_MainWindow(object):
         self.textChat = QtGui.QLineEdit(self.groupBox_2)
         self.textChat.setGeometry(QtCore.QRect(10, 20, 300, 31))        
         self.textChat.setObjectName(_fromUtf8("textChat"))
-        self.textChat.setStyleSheet("border:None;background:#fff;")
+        self.textChat.setStyleSheet("border:None;background:#fff;")                
+
         
         self.btnEnviarChat = QtGui.QPushButton(self.groupBox_2)
         self.btnEnviarChat.setGeometry(QtCore.QRect(320, 20, 60, 31))
@@ -495,24 +449,12 @@ class Ui_MainWindow(object):
         #Botões Configurações
         self.BtnConn.clicked.connect(self.conexao)
         self.BtnEnc.clicked.connect(self.desconectar)
-        self.BtnDir.clicked.connect(self.getDir)
-        
-        #Botões Auxiliares
-        self.btnA1x1.clicked.connect(self.esquerda75)
-        self.btnA1x2.clicked.connect(self.ledsOff)
-        self.btnA1x3.clicked.connect(self.direita75)
-        self.btnA2x1.clicked.connect(self.esquerda50)
-        self.btnA2x2.clicked.connect(self.centro)
-        self.btnA2x3.clicked.connect(self.direita50)
-        self.btnA3x1.clicked.connect(self.esquerda25)
-        self.btnA3x2.clicked.connect(self.startLife)
-        self.btnA3x3.clicked.connect(self.direita25)
-        
+        self.BtnDir.clicked.connect(self.getDir)        
         
         #Botões Movimentos
         self.btn1x1.clicked.connect(self.concordar)
         self.btn1x2.clicked.connect(self.discordar)
-        self.btn1x3.clicked.connect(self.conversar)
+        self.btn1x3.clicked.connect(self.nossa)
         self.btn2x1.clicked.connect(self.comemorar)
         self.btn2x2.clicked.connect(self.empatia)
         self.btn2x3.clicked.connect(self.duvida)
@@ -528,7 +470,6 @@ class Ui_MainWindow(object):
         #Botoões Chat
         self.textChat.returnPressed.connect(self.textToSpeech)
         self.btnEnviarChat.clicked.connect(self.textToSpeech)
-
         
         #Recupera o ultimo ip adicionado na lista.
         self.inputIP.setText(last_ip)
@@ -536,13 +477,18 @@ class Ui_MainWindow(object):
         completerid = QtGui.QCompleter(lista_id)
         self.inputIDC.setCompleter(completerid)
         completerip = QtGui.QCompleter(lista_ip)
-        self.inputIP.setCompleter(completerip)        
+        completerip.setCompletionMode(2)
+        self.inputIP.setCompleter(completerip)
+        
+        # completerChat = QtGui.QCompleter(l_dicio)
+        # completerChat.setCompletionMode(2)
+        # self.textChat.setCompleter(completerChat)        
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
     
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "GUIPsi - Interface Gráfica de Interação Psicológica ", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "GUIPsyin - Interface Gráfica de Interação Psicológica Infantil ", None))
         self.groupBox.setTitle(_translate("ChatWindow", "Chat", None))
         item = self.tableWidgetChat.horizontalHeaderItem(0)
         item.setText(_translate("ChatWindow", "Hora", None))
@@ -565,7 +511,7 @@ class Ui_MainWindow(object):
         self.btn1x2.setText(_translate("MainWindow", "Discordar", None))
         self.btn2x2.setText(_translate("MainWindow", "Empatia", None))
         self.btn2x1.setText(_translate("MainWindow", "Comemorar", None))
-        self.btn1x3.setText(_translate("MainWindow", "Conversar", None))
+        self.btn1x3.setText(_translate("MainWindow", "Nossa", None))
         self.btn3x3.setText(_translate("MainWindow", "Toca aqui", None))
         self.btn2x3.setText(_translate("MainWindow", "Duvida", None))
         self.btn3x2.setText(_translate("MainWindow", "Palmas", None))
@@ -578,17 +524,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Hora", None))
         item = self.tableWidget.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "Mensagens", None))
-        self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))
-        
-        self.btnA1x1.setText(_translate("MainWindow", "Esquerda 75", None))
-        self.btnA1x2.setText(_translate("MainWindow", "Cochilo", None))
-        self.btnA1x3.setText(_translate("MainWindow", "Direita 75", None))
-        self.btnA2x2.setText(_translate("MainWindow", "Para Frente", None))
-        self.btnA2x1.setText(_translate("MainWindow", "Esquerda 50", None))
-        self.btnA2x3.setText(_translate("MainWindow", "Direita 50", None))
-        self.btnA3x3.setText(_translate("MainWindow", "Direita 25", None))
-        self.btnA3x2.setText(_translate("MainWindow", "Acordar", None))
-        self.btnA3x1.setText(_translate("MainWindow", "Esquerda 25", None))
+        self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))        
     
     #Funções complementares
     def gera_id_sessao(self):
@@ -641,7 +577,6 @@ class Ui_MainWindow(object):
                 self.naoAudioRecording ()        
                 aviso = "AVISO: Inicio da gravação do NAO."
                 self.enviarAviso(aviso)
-                           
         except BaseException:
             aviso = "ERROR: Falha na gravação do NAO."
             self.enviarAviso(aviso)
@@ -658,7 +593,13 @@ class Ui_MainWindow(object):
             aviso = "ERROR: Falha na configuração."
             self.enviarAviso(aviso)
             return
-            
+        try:
+            self.basic_awareness = ALProxy("ALBasicAwareness", self.robotIP, PORT)
+            self.motion = ALProxy("ALMotion", self.robotIP, PORT)
+        except BaseException:
+            aviso = "ERROR: Falha na configuração da detecção de Face."
+            self.enviarAviso(aviso)
+            return
     def desconectar(self):
         try:
             self.stopVideoRecording()
@@ -671,15 +612,15 @@ class Ui_MainWindow(object):
         except BaseException:
             aviso = "ERROR:Falha ao salvar chat."
             self.enviarAviso(aviso)
-        try:
-            nomeSessao = self.gera_id_sessao()
-            stop_AVrecording(nomeSessao,self.pasta)
-            file_manager(nomeSessao,self.pasta)
-            aviso = "AVISO: Video Webcam salva com sucesso."
-            self.enviarAviso(aviso)
-        except BaseException:
-            aviso = "ERROR: Não foi possível salvar o video da WebCam."
-            self.enviarAviso(aviso)
+        # try:
+        #     nomeSessao = self.gera_id_sessao()
+        #     stop_AVrecording(nomeSessao,self.pasta)
+        #     file_manager(nomeSessao,self.pasta)
+        #     aviso = "AVISO: Video Webcam salva com sucesso."
+        #     self.enviarAviso(aviso)
+        # except BaseException:
+        #     aviso = "ERROR: Não foi possível salvar o video da WebCam."
+        #     self.enviarAviso(aviso)
         try:            
             self.jan.destroy()
             self.jan = None
@@ -780,8 +721,8 @@ class Ui_MainWindow(object):
         
         # This records a 320*240 MJPG video at 10 fps.
         # Note MJPG can't be recorded with a framerate lower than 3 fps.
-        videoRecorderProxy.setResolution(1)
-        videoRecorderProxy.setFrameRate(10)
+        videoRecorderProxy.setResolution(2)
+        videoRecorderProxy.setFrameRate(30)
         videoRecorderProxy.setVideoFormat("MJPG")
         videoRecorderProxy.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
     def stopVideoRecording(self):               
@@ -912,7 +853,77 @@ class Ui_MainWindow(object):
         for name in names:
             leds.post.on(name)
         motion = ALProxy("ALMotion", self.robotIP, PORT)
-        motion.post.wakeUp()  
+        motion.post.wakeUp()
+    def faceDetector(self):
+        try:
+            faceProxy = ALProxy("ALFaceDetection", self.robotIP, PORT)
+            period = 500
+            faceProxy.subscribe("Test_Face", period, 0.0 )
+        except Exception:
+            aviso = "Erro na criação do faceproxy "
+            self.enviarAviso(aviso)
+        try:
+            memoryProxy = ALProxy("ALMemory", self.robotIP, PORT)
+            memValue = "FaceDetected"
+            val = memoryProxy.getData(memValue) 
+        except Exception:
+            aviso = "Erro na criação do memory proxy:"
+            self.enviarAviso(aviso)
+            
+        if(val and isinstance(val, list) and len(val) >= 2): 
+                      
+            timeStamp = val[0]   
+                     
+            faceInfoArray = val[1]
+
+            try:            
+                for j in range( len(faceInfoArray)-1 ):
+                            faceInfo = faceInfoArray[j]
+
+                            # First Field = Shape info.
+                            faceShapeInfo = faceInfo[0]
+
+                            # Second Field = Extra info (empty for now).
+                            faceExtraInfo = faceInfo[1]
+
+                            # print "  alpha %.3f - beta %.3f" % (faceShapeInfo[1], faceShapeInfo[2])
+                            # print "  width %.3f - height %.3f" % (faceShapeInfo[3], faceShapeInfo[4])
+                            return True
+
+            except Exception:
+                    aviso = "faces detected, but it seems getData is invalid. ALValue ="
+                    self.enviarAviso(aviso)
+        else:
+                # print "No face detected"
+                return False
+        faceProxy.unsubscribe("Test_Face")
+    def olhaPraFrente(self):
+
+        names = list()
+        times = list()
+        keys = list()
+
+        names.append("HeadPitch")
+        times.append([1])
+        keys.append([-0.15708])
+
+        names.append("HeadYaw")
+        times.append([1])
+        keys.append([0.00698132])
+        
+        self.motion.angleInterpolation(names, keys, times, True)
+    def face_fun(self):
+        self.basic_awareness.startAwareness()
+        Face = False
+        while Face !=True:
+            Face = self.faceDetector()            
+            if (Face == True):
+                self.basic_awareness.stopAwareness()
+            else:        
+                self.olhaPraFrente()
+                time.sleep(5)
+        time.sleep(5)
+        self.face_fun()
     #Funções Movimentos
     def levantar(self):
         try:            
@@ -926,7 +937,7 @@ class Ui_MainWindow(object):
     def sentar(self):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-            msg = "Ah!! Que canseira!"
+            msg = "Ahh!!"
             self.voiceNao(msg)
             motionProxy.post.rest()
                          
@@ -963,7 +974,7 @@ class Ui_MainWindow(object):
         try:                                    
             motion = ALProxy("ALMotion", self.robotIP, PORT)  
             postureProxy = ALProxy("ALRobotPosture", self.robotIP, PORT)               
-            postureProxy.post.goToPosture("Stand",0.3)
+            motion.post.wakeUp()
             motion.post.angleInterpolation(names, keys, times, True)            
             postureProxy.post.goToPosture("Stand",0.3)
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
@@ -1015,11 +1026,11 @@ class Ui_MainWindow(object):
         else:
             self.movimento(focus.focus)
             self.movimento(arm_pose.arm_pose)
-    def conversar(self):
+    def nossa(self):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            self.movimento(conversar.conversar)
+            self.movimento(nossa.nossa)
     def comemorar(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -1035,6 +1046,8 @@ class Ui_MainWindow(object):
             return
         else:
             self.movimento(duvida.duvida)
+            msg = "ué?"
+            self.voiceNao(msg)
     def palmas(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -1056,25 +1069,10 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            msg = "Smack"
+            msg = "beijos"
             self.voiceNao(msg)
             self.movimento(beijos.beijos)
     
-    #Fuções Movimentos Cabeça
-    def esquerda75(self):
-        self.aux_mov(focus_cabeca.esquerda75)
-    def esquerda50(self):
-        self.aux_mov(focus_cabeca.esquerda50)
-    def esquerda25(self):
-        self.aux_mov(focus_cabeca.esquerda25)
-    def centro(self):
-        self.aux_mov(focus_cabeca.grauZero)
-    def direita75(self):
-        self.aux_mov(focus_cabeca.direita75)
-    def direita50(self):
-        self.aux_mov(focus_cabeca.direita50)
-    def direita25(self):
-        self.aux_mov(focus_cabeca.direita25)
 class ImageWidget(QWidget):
     """
     Tiny widget to display camera images from Naoqi.

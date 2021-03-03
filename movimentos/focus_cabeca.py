@@ -56,23 +56,26 @@ class Focus():
                     print "Error msg %s" % (str(e))
         else:
                 print "No face detected"
+                return False
         self.faceProxy.unsubscribe("Test_Face")
-        return False
+        
     
     def grauZero(self):
+
         names = list()
         times = list()
         keys = list()
 
         names.append("HeadPitch")
-        times.append([0.8])
-        keys.append([0.08126])
+        times.append([0.84])
+        keys.append([0.00149202])
 
         names.append("HeadYaw")
-        times.append([0.8])
-        keys.append([0])
+        times.append([0.84])
+        keys.append([-0.0061779])
 
-        return keys,times,names
+
+        return names,times, keys
 
     def esquerda25(self):
         names = list()
@@ -80,37 +83,44 @@ class Focus():
         keys = list()
 
         names.append("HeadPitch")
-        times.append([0.4])
-        keys.append([0])
+        times.append([0.84])
+        keys.append([0.00302601])
 
         names.append("HeadYaw")
-        times.append([0.4])
-        keys.append([0.436332])
-
+        times.append([0.84])
+        keys.append([0.44175])
+        
         return names,times,keys
 
     def esquerda50(self):
+
         names = list()
         times = list()
         keys = list()
 
         names.append("HeadPitch")
-        times.append([0.4])
-        keys.append([0])
+        times.append([0.84])
+        keys.append([0.00302601])
 
         names.append("HeadYaw")
-        times.append([0.4])
-        keys.append([0.862864])
+        times.append([0.84])
+        keys.append([0.875872])
+
 
         return names,times,keys
 
     def esquerda75(self):
+
         names = list()
         times = list()
         keys = list()
 
+        names.append("HeadPitch")
+        times.append([0.84])
+        keys.append([0.00302601])
+
         names.append("HeadYaw")
-        times.append([0.4])
+        times.append([0.84])
         keys.append([1.309])
 
         return names,times,keys
@@ -121,12 +131,12 @@ class Focus():
         keys = list()
 
         names.append("HeadPitch")
-        times.append([0.4])
-        keys.append([0])
+        times.append([0.84])
+        keys.append([0.00302601])
 
         names.append("HeadYaw")
-        times.append([0.4])
-        keys.append([-0.435027])
+        times.append([0.84])
+        keys.append([-0.44175])
 
         return names,times,keys
 
@@ -136,12 +146,12 @@ class Focus():
         keys = list()
 
         names.append("HeadPitch")
-        times.append([0.4])
-        keys.append([0])
+        times.append([0.84])
+        keys.append([0.00302601])
 
         names.append("HeadYaw")
-        times.append([0.4])
-        keys.append([-0.872665])
+        times.append([0.84])
+        keys.append([-0.875872])
 
         return names,times,keys
 
@@ -151,36 +161,44 @@ class Focus():
         keys = list()
 
         names.append("HeadPitch")
-        times.append([0.4])
-        keys.append([0])
+        times.append([0.84])
+        keys.append([0.00302601])
 
         names.append("HeadYaw")
-        times.append([0.4])
+        times.append([0.84])
         keys.append([-1.309])
 
         return names,times,keys
 
     def faceDetecting(self):
-        listaMov = [self.esquerda25,self.direita25,self.direita50,self.esquerda50,self.esquerda75,self.esquerda75,self.grauZero]        
+        listaMov = [self.esquerda25,self.esquerda50,self.direita25,self.direita50,self.esquerda75,self.direita75]        
+        Face = False        
+        while (Face!=True):
+            for item in listaMov:
+                names, times, keys = item()
+                # self.motionProxy.wakeUp()
+                Face = self.faceDetector()
+                if (Face == True):                                   
+                    return
+                else:
+                    self.motionProxy.angleInterpolation(names, keys, times, True)
+                
 
-        for item in listaMov:
-            names, times, keys = item()
-            self.motionProxy.wakeUp()
-            self.motionProxy.angleInterpolation(names, keys, times, False)
-            if self.faceDetector()!= False:
-                break  
-        
-              
-            
-        
 
+                
+        # self.motionProxy.setBreathConfig([['Bpm', 20.0], ['Amplitude', 0.3]])
+        # self.motionProxy.setBreathEnabled('Body',True)
 
-ip = "192.168.137.29"
+ip = "192.168.137.183"
 port = 9559
 
 teste = Focus(ip,port)
 teste.faceDetecting()
+
         
+
+
+
         
             
 
