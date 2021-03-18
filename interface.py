@@ -559,15 +559,15 @@ class Ui_MainWindow(object):
             aviso = "ERROR: Falha na conexão com robô."
             self.enviarAviso(aviso)
             return
-        try:            
-            session_ID = self.gera_id_sessao()         
-            start_AVrecording(session_ID)
-            aviso = "AVISO: Conexão feita com webcam."
-            self.enviarAviso(aviso)
-        except BaseException:
-            aviso = "ERROR: Falha na conexão com Webcam."
-            self.enviarAviso(aviso)
-            return
+        # try:            
+        #     session_ID = self.gera_id_sessao()         
+        #     start_AVrecording(session_ID)
+        #     aviso = "AVISO: Conexão feita com webcam."
+        #     self.enviarAviso(aviso)
+        # except BaseException:
+        #     aviso = "ERROR: Falha na conexão com Webcam."
+        #     self.enviarAviso(aviso)
+        #     return
         try:
             if (self.pasta == ""):                
                 aviso = "AVISO: Nenhuma pasta foi selecionada."
@@ -724,22 +724,22 @@ class Ui_MainWindow(object):
         videoRecorderProxy.setResolution(2)
         videoRecorderProxy.setFrameRate(30)
         videoRecorderProxy.setVideoFormat("MJPG")
-        videoRecorderProxy.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
+        videoRecorderProxy.post.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
     def stopVideoRecording(self):               
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)        
         # Video file is saved on the robot in the
         # /home/nao/recordings/cameras/ folder.
-        videoRecorderProxy.stopRecording()        
+        videoRecorderProxy.post.stopRecording()        
     def naoAudioRecording(self):        
         filename = self.gera_id_sessao()
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
-        voiceProxy.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
-                                             "wav",
+        voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.ogg",
+                                             "ogg",
                                              48000,
-                                             [0,0,1,0])
+                                             [1,1,1,0])
     def stopAudioRecording(self):        
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
-        voiceProxy.stopMicrophonesRecording()
+        voiceProxy.post.stopMicrophonesRecording()
     def nivelBateria(self):                       
         proxyBattery = ALProxy("ALBattery",self.robotIP,PORT)
         status = proxyBattery.post.getBatteryCharge()
@@ -766,12 +766,12 @@ class Ui_MainWindow(object):
             filename = self.gera_id_sessao()
             # Define the file that you want to download from the remote directory
             videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
-            audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.wav'
+            audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.ogg'
 
             # Define the local path where the file will be saved
             # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
             localFilePath = self.pasta             
-            arqWav = localFilePath+"\\"+filename+"_NAO.wav"
+            arqWav = localFilePath+"\\"+filename+"_NAO.ogg"
             arqAvi = localFilePath+"\\"+filename+"_NAO.avi"
             if localFilePath != "":
                 sftp.get(videopath, arqAvi)

@@ -35,7 +35,7 @@ class VideoRecorder:
 	def __init__(self):
 		
 		self.open = True
-		self.device_index = 0     # fps should be the minimum constant rate at which the camera can
+		self.device_index = 1     # fps should be the minimum constant rate at which the camera can
 		self.fourcc = "MJPG"       # capture images (with no decrease in speed over time; testing is required)
 		self.frameSize = (640,480) # video formats and sizes also depend and vary according to the camera used
 		self.video_filename = "temp_video.avi"
