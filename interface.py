@@ -213,14 +213,6 @@ class Ui_MainWindow(object):
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
         self.BtnEnc.setEnabled(False)
         self.BtnEnc.setStyleSheet("border:None;")
-        
-        # BtnSalvar
-        self.BtnNaoSave = QtGui.QPushButton(self.Menu)
-        self.BtnNaoSave.setGeometry(QtCore.QRect(95, 173, 265, 23))
-        self.BtnNaoSave.setObjectName(_fromUtf8("BtnEnc"))
-        self.BtnNaoSave.setEnabled(True)
-        self.BtnNaoSave.setStyleSheet("border:None;")
-        self.BtnNaoSave.clicked.connect(self.getNAOfiles)
 
         #### BOX MOVIMENTOS
         self.Movimentos = QtGui.QGroupBox(self.centralwidget)
@@ -382,11 +374,7 @@ class Ui_MainWindow(object):
         self.btnGB3x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))
         self.gridLayout_GB.addWidget(self.btnGB3x1, 2, 3, 1, 1)
-        
-        
 
-        
-        
                 
         ### BOTAO EMERGENCIA
         self.EMG = QtGui.QPushButton(self.centralwidget)
@@ -423,7 +411,9 @@ class Ui_MainWindow(object):
         self.EMG.clicked.connect(self.desligar)
         
         #Botões Sessão
-        
+        self.btnGB1x1.clicked.connect(self.startNaoRecording)
+        self.btnGB2x1.clicked.connect(self.stopNaoRecording)
+        self.btnGB3x1.clicked.connect(self.getNAOfiles)
 
         
         #Recupera o ultimo ip adicionado na lista.
@@ -444,10 +434,8 @@ class Ui_MainWindow(object):
     
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "GUIPsyin - Interface Gráfica de Interação Psicológica Infantil ", None))
-        self.groupBox.setTitle(_translate("ChatWindow", "Sessão", None))
-
-        self.BtnNaoSave.setText(_translate("MainWindow", "Download video NAO", None))        
-        
+                        
+        #menu
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
         self.actionSobre.setText(_translate("MainWindow", "Sobre", None))
         self.Menu.setTitle(_translate("MainWindow", "Configurações", None))
@@ -457,7 +445,12 @@ class Ui_MainWindow(object):
         self.label_dir.setText(_translate("MainWindow", "Diretório", None))
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
         self.BtnEnc.setText(_translate("MainWindow", "Encerrar Sessão", None))
-        
+        #Gravação
+        self.groupBox.setTitle(_translate("ChatWindow", "Sessão", None))
+        self.btnGB1x1.setText(_translate("MainWindow", "Iniciar Gravação", None))
+        self.btnGB2x1.setText(_translate("MainWindow", "Encerrar Gravação", None))
+        self.btnGB3x1.setText(_translate("MainWindow", "Download video NAO", None))
+        #Movimentos
         self.Movimentos.setTitle(_translate("MainWindow", "Movimentos", None))
         self.btn1x1.setText(_translate("MainWindow", "Concordar", None))
         self.btn1x2.setText(_translate("MainWindow", "Discordar", None))
@@ -496,12 +489,11 @@ class Ui_MainWindow(object):
         conn.close()
     def conexao(self):        
         if (self.inputIDC.text() != ""):
-                pass
+            pass
         else:
             aviso = "ERROR: Campo ID Criança precisa ser preenchido."
             self.enviarAviso(aviso)
-            return
-            
+            return            
         try:
             self.robotIP = self.setIP()
             #self.nivelBateria()
@@ -520,24 +512,9 @@ class Ui_MainWindow(object):
         # except BaseException:
         #     aviso = "ERROR: Falha na conexão com Webcam."
         #     self.enviarAviso(aviso)
-        #     return
-        try:
-            if (self.pasta == ""):                
-                aviso = "AVISO: Nenhuma pasta foi selecionada."
-                self.enviarAviso(aviso)
-            else:
-                self.naoVideoRecording()
-                self.naoAudioRecording ()        
-                aviso = "AVISO: Inicio da gravação do NAO."
-                self.enviarAviso(aviso)
-        except BaseException:
-            aviso = "ERROR: Falha na gravação do NAO."
-            self.enviarAviso(aviso)
-            return      
+        #     return        
         try:    
-            self.salva_ip()                        
-            aviso = "AVISO: Sessão iniciada com sucesso."
-            self.enviarAviso(aviso)        
+            self.salva_ip()
             self.BtnConn.setText("Conectado")            
             self.BtnConn.setEnabled(False)
             self.BtnEnc.setEnabled(True)
@@ -554,17 +531,11 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return
     def desconectar(self):
-        try:
-            self.stopVideoRecording()
-            self.stopAudioRecording()
-        except BaseException:
-            aviso = "ERROR:Falha na gravacao do NAO"
-            self.enviarAviso(aviso)
-        try:
-            self.salva_Texto()
-        except BaseException:
-            aviso = "ERROR:Falha ao salvar chat."
-            self.enviarAviso(aviso)
+        # try:
+        #     self.salva_Texto()
+        # except BaseException:
+        #     aviso = "ERROR:Falha ao salvar chat."
+        #     self.enviarAviso(aviso)
         # try:
         #     nomeSessao = self.gera_id_sessao()
         #     stop_AVrecording(nomeSessao,self.pasta)
@@ -651,11 +622,9 @@ class Ui_MainWindow(object):
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
-        
-        # This records a 320*240 MJPG video at 10 fps.
-        # Note MJPG can't be recorded with a framerate lower than 3 fps.
+
         videoRecorderProxy.setResolution(2)
-        videoRecorderProxy.setFrameRate(30)
+        videoRecorderProxy.setFrameRate(15)
         videoRecorderProxy.setVideoFormat("MJPG")
         videoRecorderProxy.post.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
     def stopVideoRecording(self):               
@@ -666,10 +635,9 @@ class Ui_MainWindow(object):
     def naoAudioRecording(self):        
         filename = self.gera_id_sessao()
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
-        voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.ogg",
-                                             "ogg",
-                                             48000,
-                                             [1,1,1,0])
+        voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
+                                             "wav",48000,[0,0,1,0])
+ 
     def stopAudioRecording(self):        
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
         voiceProxy.post.stopMicrophonesRecording()
@@ -691,33 +659,36 @@ class Ui_MainWindow(object):
             aviso = "ERROR:Não foi possível salvar o video do NAO."
             self.enviarAviso(aviso)
     def getNAOfiles(self):
-        myHostname = str(self.setIP())
-        myUsername = "nao"
-        myPassword = "nao"
-        with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
-            print("Connection succesfully stablished ... ")
-            filename = self.gera_id_sessao()
-            # Define the file that you want to download from the remote directory
-            videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
-            audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.ogg'
+        try:
+            myHostname = str(self.setIP())
+            myUsername = "nao"
+            myPassword = "nao"
+            with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
+                print("Connection succesfully stablished ... ")
+                filename = self.gera_id_sessao()
+                # Define the file that you want to download from the remote directory
+                videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
+                audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.wav'
 
-            # Define the local path where the file will be saved
-            # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
-            localFilePath = self.pasta             
-            arqWav = localFilePath+"\\"+filename+"_NAO.ogg"
-            arqAvi = localFilePath+"\\"+filename+"_NAO.avi"
-            if localFilePath != "":
-                sftp.get(videopath, arqAvi)
-                sftp.get(audiopath, arqWav)             
-                #print "Muxing"
-                cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
-                subprocess.call(cmd, shell=True)
-                sftp.remove(videopath)
-                sftp.remove(audiopath)
-                file_manager(filename,localFilePath)
-
+                # Define the local path where the file will be saved
+                # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
+                localFilePath = self.pasta             
+                arqWav = localFilePath+"\\"+filename+"_NAO.wav"
+                arqAvi = localFilePath+"\\"+filename+"_NAO.avi"
+                if localFilePath != "":
+                    sftp.get(videopath, arqAvi)
+                    sftp.get(audiopath, arqWav)             
+                    #print "Muxing"
+                    cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
+                    subprocess.call(cmd, shell=True)
+                    # sftp.remove(videopath)
+                    # sftp.remove(audiopath)
+                    # file_manager(filename,localFilePath)
+        except BaseException:
+            aviso = "ERROR:Falha na conexão com NAO."
+            self.enviarAviso(aviso)
 	   
-            #Funções dos botões
+    #Funções dos botões
     def desligar(self):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)
@@ -755,7 +726,8 @@ class Ui_MainWindow(object):
         for name in names:
             leds.post.on(name)
         motion = ALProxy("ALMotion", self.robotIP, PORT)
-        motion.post.wakeUp()
+        motion.post.goToPosture("Stand",0.3)
+        self.face_fun()
     def faceDetector(self):
         try:
             faceProxy = ALProxy("ALFaceDetection", self.robotIP, PORT)
@@ -821,12 +793,36 @@ class Ui_MainWindow(object):
             Face = self.faceDetector()            
             if (Face == True):
                 self.basic_awareness.stopAwareness()
+                return
             else:        
                 self.olhaPraFrente()
                 time.sleep(5)
         time.sleep(5)
         self.face_fun()
-        
+    def startNaoRecording(self):
+        try:
+            if (self.pasta == ""):                
+                aviso = "AVISO: Nenhuma pasta foi selecionada."
+                self.enviarAviso(aviso)
+                return
+            else:
+                self.naoVideoRecording()
+                self.naoAudioRecording ()        
+                aviso = "AVISO: Inicio da gravação do NAO."
+                self.enviarAviso(aviso)
+        except BaseException:
+            aviso = "ERROR: Falha no incio da gravação do NAO."
+            self.enviarAviso(aviso)
+            return    
+    def stopNaoRecording(self):
+        try:
+            self.stopVideoRecording()
+            self.stopAudioRecording()
+            aviso = "AVISO: Fim da gravação do NAO."
+            self.enviarAviso(aviso)
+        except BaseException:
+            aviso = "ERROR:Falha ao encerrar a gravação do NAO."
+            self.enviarAviso(aviso)         
     #Funções Movimentos
     def levantar(self):
         try:            
@@ -876,8 +872,7 @@ class Ui_MainWindow(object):
             return
         try:                                    
             motion = ALProxy("ALMotion", self.robotIP, PORT)  
-            postureProxy = ALProxy("ALRobotPosture", self.robotIP, PORT)               
-            motion.post.wakeUp()
+            postureProxy = ALProxy("ALRobotPosture", self.robotIP, PORT)
             motion.post.angleInterpolation(names, keys, times, True)            
             postureProxy.post.goToPosture("Stand",0.3)
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
