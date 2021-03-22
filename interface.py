@@ -352,7 +352,7 @@ class Ui_MainWindow(object):
         self.logo_Unesp.raise_()
         self.tableWidget.raise_()
         
-        #Chat
+        #Gravação
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
         self.groupBox.setGeometry(QtCore.QRect(10, 250, 400, 300))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
@@ -368,69 +368,24 @@ class Ui_MainWindow(object):
                                     border-radius:10px;
                                     font:16px;                                    
                                     """)
-        self.tableWidgetChat = QtGui.QTableWidget(self.groupBox)
-        self.tableWidgetChat.setGeometry(QtCore.QRect(10, 20, 385, 200)) 
-        self.tableWidgetChat.setFrameShape(QtGui.QFrame.Box)
-        self.tableWidgetChat.setFrameShadow(QtGui.QFrame.Plain)
-        self.tableWidgetChat.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.tableWidgetChat.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.tableWidgetChat.setTabKeyNavigation(False)
-        self.tableWidgetChat.setProperty("showDropIndicator", False)
-        self.tableWidgetChat.setDragDropOverwriteMode(False)
-        self.tableWidgetChat.setAlternatingRowColors(False)
-        self.tableWidgetChat.setShowGrid(False)
-        self.tableWidgetChat.setGridStyle(QtCore.Qt.SolidLine)
-        self.tableWidgetChat.setCornerButtonEnabled(False)
-        self.tableWidgetChat.setRowCount(5)
-        self.tableWidgetChat.setColumnCount(2)
-        self.tableWidgetChat.setObjectName(_fromUtf8("tableWidgetChat"))
-        item = QtGui.QTableWidgetItem()
-        self.tableWidgetChat.setHorizontalHeaderItem(0, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidgetChat.setHorizontalHeaderItem(1, item)
-        self.tableWidgetChat.horizontalHeader().setVisible(True)
-        self.tableWidgetChat.horizontalHeader().setCascadingSectionResizes(False)
-        self.tableWidgetChat.horizontalHeader().setHighlightSections(True)
-        self.tableWidgetChat.horizontalHeader().setMinimumSectionSize(70)
-        self.tableWidgetChat.horizontalHeader().setSortIndicatorShown(False)
-        self.tableWidgetChat.horizontalHeader().setStretchLastSection(True)
-        self.tableWidgetChat.verticalHeader().setVisible(False)
-        self.tableWidgetChat.verticalHeader().setCascadingSectionResizes(False)
-        self.tableWidgetChat.verticalHeader().setDefaultSectionSize(30)
-        self.tableWidgetChat.verticalHeader().setHighlightSections(False)
-        self.tableWidgetChat.verticalHeader().setMinimumSectionSize(19)
-        self.tableWidgetChat.verticalHeader().setSortIndicatorShown(False)
-        self.tableWidgetChat.verticalHeader().setStretchLastSection(False)
-        self.tableWidgetChat.setStyleSheet("""font:12px;
-                                           border-left:2px solid darkgreen;
-                                           border-right: 2px solid darkgreen;
-                                           border-top:None;
-                                           border-bottom:2px solid darkgreen;
-                                           border-radius:5px;
-                                           
-                                           """)
+        self.gridLayout_GB = QtGui.QGridLayout(self.groupBox)
+        self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))
         
-        self.groupBox_2 = QtGui.QGroupBox(self.groupBox)
-        self.groupBox_2.setGeometry(QtCore.QRect(10, 230, 390, 61))
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
-        self.groupBox_2.setSizePolicy(sizePolicy)        
-        self.groupBox_2.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
-        self.groupBox_2.setStyleSheet("border:None;")
+        self.btnGB1x1 = QtGui.QPushButton(self.groupBox)
+        self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))
+        self.gridLayout_GB.addWidget(self.btnGB1x1, 0, 3, 1, 1)
         
-        self.textChat = QtGui.QLineEdit(self.groupBox_2)
-        self.textChat.setGeometry(QtCore.QRect(10, 20, 300, 31))        
-        self.textChat.setObjectName(_fromUtf8("textChat"))
-        self.textChat.setStyleSheet("border:None;background:#fff;")                
+        self.btnGB2x1 = QtGui.QPushButton(self.groupBox)
+        self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))
+        self.gridLayout_GB.addWidget(self.btnGB2x1, 1, 3, 1, 1)
+        
+        self.btnGB3x1 = QtGui.QPushButton(self.groupBox)
+        self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))
+        self.gridLayout_GB.addWidget(self.btnGB3x1, 2, 3, 1, 1)
+        
+        
 
         
-        self.btnEnviarChat = QtGui.QPushButton(self.groupBox_2)
-        self.btnEnviarChat.setGeometry(QtCore.QRect(320, 20, 60, 31))
-        self.btnEnviarChat.setObjectName(_fromUtf8("btnEnviarChat"))
-        self.btnEnviarChat.setStyleSheet("border:None;")
         
                 
         ### BOTAO EMERGENCIA
@@ -467,9 +422,9 @@ class Ui_MainWindow(object):
         #Botão Emergência
         self.EMG.clicked.connect(self.desligar)
         
-        #Botoões Chat
-        self.textChat.returnPressed.connect(self.textToSpeech)
-        self.btnEnviarChat.clicked.connect(self.textToSpeech)
+        #Botões Sessão
+        
+
         
         #Recupera o ultimo ip adicionado na lista.
         self.inputIP.setText(last_ip)
@@ -489,13 +444,10 @@ class Ui_MainWindow(object):
     
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "GUIPsyin - Interface Gráfica de Interação Psicológica Infantil ", None))
-        self.groupBox.setTitle(_translate("ChatWindow", "Chat", None))
-        item = self.tableWidgetChat.horizontalHeaderItem(0)
-        item.setText(_translate("ChatWindow", "Hora", None))
-        item = self.tableWidgetChat.horizontalHeaderItem(1)
-        item.setText(_translate("ChatWindow", "Mensagem", None))
+        self.groupBox.setTitle(_translate("ChatWindow", "Sessão", None))
+
         self.BtnNaoSave.setText(_translate("MainWindow", "Download video NAO", None))        
-        self.btnEnviarChat.setText(_translate("ChatWindow", "Enviar", None))
+        
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
         self.actionSobre.setText(_translate("MainWindow", "Sobre", None))
         self.Menu.setTitle(_translate("MainWindow", "Configurações", None))
@@ -527,6 +479,7 @@ class Ui_MainWindow(object):
         self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))        
     
     #Funções complementares
+    
     def gera_id_sessao(self):
         val = str(_fromUtf8(self.inputIDC.text()))
         t = time.localtime()
@@ -694,27 +647,7 @@ class Ui_MainWindow(object):
         cursor.execute(delete)
         conn.commit()
         conn.close()
-    def salva_Texto(self):
-        conn = sqlite3.connect('BdProteger.db')
-        cursor = conn.cursor()
-        query= "SELECT * FROM ChatSessao;"
-        cursor.execute(query)
-        #Gera arquivo com o log dos arquivos
-        listaLog = []
-        t = time.localtime()
         
-        val = str(_fromUtf8(self.inputIDC.text()))
-        nome = "Chat"+ str(time.strftime("%Y%m%d"+ "_" + val , t)) 
-        arq = open("Chat/"+ nome +".txt",'w')
-        for row, data in enumerate(cursor.fetchall()):              
-            listaLog.append(data)
-            arq.write(str(data) + "\n")
-        arq.close()
-        #Apaga os logs do banco de dados
-        delete = "DELETE FROM ChatSessao;"
-        cursor.execute(delete)
-        conn.commit()
-        conn.close()          
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
@@ -801,38 +734,7 @@ class Ui_MainWindow(object):
         if folder != None:
             self.pasta = str(folder)
             self.inputDir.setText(self.pasta)
-    def textToSpeech(self):
-        if (self.BtnConn.text() == "Conectado"):
-            self.msg = self.textChat.text()        
-            self.msg = unicode(self.msg).encode('utf-8')                    
-            tts = ALProxy("ALTextToSpeech",self.robotIP,PORT)
-            tts.setLanguage("Brazilian")
-            tts.setParameter("speed", 70)
-            tts.setParameter("pitchShift", 1.2)            
-            tts.post.say(self.msg)
-            self.SalvaTextoBD(self.msg)
-            self.textChat.clear()            
-        else:
-
-            self.textChat.clear()
-            return
-    def SalvaTextoBD(self,texto):
-        conn = sqlite3.connect('BdProteger.db')
-        conn.text_factory = str
-        self.texto = texto
-        t = time.localtime()
-        Data = str(t.tm_mday) + "/" + str(t.tm_mon) + "/" + str(t.tm_year) 
-        hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec) 
-        conn.execute("INSERT INTO ChatSessao (Data,Hora,Texto) VALUES(?,?,?);",(Data,hora,self.texto))
-        conn.commit()
-        query ="SELECT Hora, Texto FROM ChatSessao ORDER BY ip DESC LIMIT 1"                
-        result = conn.execute(query)
-        for row, row_data in enumerate(result):
-            self.tableWidgetChat.insertRow(row)            
-            for col, data in enumerate(row_data):
-                self.tableWidgetChat.setItem(row,col, QTableWidgetItem(_fromUtf8(data) ))
-        self.tableWidgetChat.show()
-        conn.close()
+    
     def voiceNao(self,msg):        
         tts = ALProxy("ALTextToSpeech",self.robotIP,PORT)
         tts.setLanguage("Brazilian")
@@ -924,6 +826,7 @@ class Ui_MainWindow(object):
                 time.sleep(5)
         time.sleep(5)
         self.face_fun()
+        
     #Funções Movimentos
     def levantar(self):
         try:            
