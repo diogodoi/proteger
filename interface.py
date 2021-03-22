@@ -636,7 +636,9 @@ class Ui_MainWindow(object):
         filename = self.gera_id_sessao()
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
         voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
-                                             "wav",48000,[0,0,1,0])
+                                             "wav",
+                                             48000,
+                                             [0,0,1,0])
  
     def stopAudioRecording(self):        
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
