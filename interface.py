@@ -82,8 +82,8 @@ class Ui_MainWindow(object):
         self.robotIP = ""
     def setupUi(self, MainWindow,height=height):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
-        MainWindow.resize(400, height)
-        MainWindow.setMinimumSize(QtCore.QSize(850, height))
+        MainWindow.resize(850, height)
+        # MainWindow.setMinimumSize(QtCore.QSize(850, height))
         MainWindow.setMaximumSize(QtCore.QSize(850, height))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -103,12 +103,12 @@ class Ui_MainWindow(object):
 
         self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.gridMain = QtGui.QGridLayout(self.centralwidget)
+        self.gridMain.setObjectName(_fromUtf8("gridMain"))
         
         #Menu bar
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 40))
-        self.menubar.setObjectName(_fromUtf8("menubar"))
-                
+        self.menubar.setObjectName(_fromUtf8("menubar"))                
         self.menuMenu = QtGui.QMenu(self.menubar)        
         self.menuMenu.setObjectName(_fromUtf8("menuMenu"))
         MainWindow.setMenuBar(self.menubar)
@@ -117,67 +117,33 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actionSobre = QtGui.QAction(MainWindow)
         self.actionSobre.setObjectName(_fromUtf8("actionSobre"))
-        self.menuMenu.addAction(self.actionSobre)  
-              
+        self.menuMenu.addAction(self.actionSobre)
         self.menubar.addAction(self.menuMenu.menuAction())
+        
 
         #Configurações
-        self.Menu = QtGui.QGroupBox(self.centralwidget)
-        self.Menu.setGeometry(QtCore.QRect(10, 10, 400, 230))
+        self.Menu = QtGui.QGroupBox(self.centralwidget)        
         self.Menu.setObjectName(_fromUtf8("Menu"))
         self.Menu.setStyleSheet("""                                
                                 font:16px;
                                 border-radius:15px;
                                 border:2px solid darkgreen;
                                 """)
+        self.gridMenu = QtGui.QGridLayout(self.Menu)
+        self.gridMenu.setObjectName(_fromUtf8("gridMenu"))
+        self.Menu.setMinimumHeight(200)
+        self.Menu.setMinimumWidth(300)
         
-        self.label_id = QtGui.QLabel(self.Menu)
-        self.label_id.setGeometry(QtCore.QRect(10, 27, 75, 23))
-        self.label_id.setMinimumSize(QtCore.QSize(50, 23))        
-        self.label_id.setObjectName(_fromUtf8("label_id"))
-        self.label_id.setStyleSheet("border:None")
-        
-        self.inputIDC = QtGui.QLineEdit(self.Menu)
-        self.inputIDC.setGeometry(QtCore.QRect(95, 27, 250, 20))               
-        self.inputIDC.setObjectName(_fromUtf8("inputIDC"))
-        
-        self.inputIP = QtGui.QLineEdit(self.Menu)
-        self.inputIP.setGeometry(QtCore.QRect(95, 55, 250, 20))                
-        self.inputIP.setObjectName(_fromUtf8("inputIP"))
-        
-        self.inputSessao = QtGui.QLineEdit(self.Menu)
-        self.inputSessao.setEnabled(True)
-        self.inputSessao.setGeometry(QtCore.QRect(95, 110, 250, 20))               
-        self.inputSessao.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
-        self.inputSessao.setText(_fromUtf8(""))
-        self.inputSessao.setReadOnly(True)
-        self.inputSessao.setObjectName(_fromUtf8("inputSessao"))
-        
-        self.inputDir = QtGui.QLineEdit(self.Menu)
-        self.inputDir.setEnabled(True)
-        self.inputDir.setGeometry(QtCore.QRect(95, 83, 250, 20))                
-        self.inputDir.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
-        self.inputDir.setText(_fromUtf8(""))
-        self.inputDir.setReadOnly(True)
-        self.inputDir.setObjectName(_fromUtf8("inputDir"))
-        
-        self.label_Ip = QtGui.QLabel(self.Menu)
-        self.label_Ip.setGeometry(QtCore.QRect(10, 55, 75, 23))
+        self.label_Ip = QtGui.QLabel(self.Menu)        
         self.label_Ip.setObjectName(_fromUtf8("label_Ip"))
         self.label_Ip.setStyleSheet("border:None")
-        
-        self.label_sessao = QtGui.QLabel(self.Menu)
-        self.label_sessao.setGeometry(QtCore.QRect(10, 110, 75, 23))
-        self.label_sessao.setObjectName(_fromUtf8("label_sessao"))
-        self.label_sessao.setStyleSheet("border:None")
-        
-        self.label_dir = QtGui.QLabel(self.Menu)
-        self.label_dir.setGeometry(QtCore.QRect(10,83, 75, 23))
-        self.label_dir.setObjectName(_fromUtf8("label_dir"))
-        self.label_dir.setStyleSheet("border:None")
-                
-        self.BtnConn = QtGui.QPushButton(self.Menu)
-        self.BtnConn.setGeometry(QtCore.QRect(95, 145, 265, 23))        
+        self.gridMenu.addWidget(self.label_Ip, 0, 1, 1, 1)        
+      
+        self.inputIP = QtGui.QLineEdit(self.Menu)                        
+        self.inputIP.setObjectName(_fromUtf8("inputIP"))
+        self.gridMenu.addWidget(self.inputIP, 0, 2, 1, 1)       
+              
+        self.BtnConn = QtGui.QPushButton(self.Menu)               
         self.BtnConn.setObjectName(_fromUtf8("BtnConn"))
         self.BtnConn.setStyleSheet("""
                                    QPushButton#hover {
@@ -186,43 +152,24 @@ class Ui_MainWindow(object):
                                 background:#FFF;
                                 border:None;     
                                    """)
+        self.gridMenu.addWidget(self.BtnConn, 1, 2, 1, 1)
         
-        self.BtnDir = QtGui.QPushButton(self.Menu)
-        self.BtnDir.setGeometry(QtCore.QRect(366, 80, 20, 20))
-        self.BtnDir.setObjectName(_fromUtf8("BtnConn"))
-        self.BtnDir.setStyleSheet(_fromUtf8("""
-                                            QPushButton {                                                
-                                                background-image: url(imagens/dir.png);
-                                                background-repeat: no-repeat;
-                                                border:None;
-                                                border-radius:15px;
-                                                background-color:#F1F8E0;
-                                                
-                                            }
-                                            QPushButton:hover{
-                                                padding:2px;
-                                                background-image: url(imagens/dir.png);
-                                                background-repeat: no-repeat;
-                                                background-color:#F79F81;
-                                                border-radius:15px;
-                                            }
-                                            """))
-        
-        self.BtnEnc = QtGui.QPushButton(self.Menu)
-        self.BtnEnc.setGeometry(QtCore.QRect(95, 200, 265, 23))
+        self.BtnEnc = QtGui.QPushButton(self.Menu)        
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
         self.BtnEnc.setEnabled(False)
         self.BtnEnc.setStyleSheet("border:None;")
+        self.gridMenu.addWidget(self.BtnEnc, 2, 2, 1, 1)
+        
 
         #### BOX MOVIMENTOS
-        self.Movimentos = QtGui.QGroupBox(self.centralwidget)
-        self.Movimentos.setGeometry(QtCore.QRect(420, 10, 400, hMovimentos))
+        self.Movimentos = QtGui.QGroupBox(self.centralwidget)        
         self.Movimentos.setObjectName(_fromUtf8("Movimentos"))
         self.Movimentos.setStyleSheet("""border:2px dotted darkgreen;
                                         border-radius:15px;
                                         font:16px;
                                         
                                         """)
+        self.Movimentos.setMinimumWidth(450)
         
         self.gridLayout_2 = QtGui.QGridLayout(self.Movimentos)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
@@ -276,18 +223,16 @@ class Ui_MainWindow(object):
         self.btn4x3.setObjectName(_fromUtf8("btn4x3"))
         self.gridLayout_2.addWidget(self.btn4x3, 3, 8, 1, 1)
         
-        
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
-        self.Avisos.setGeometry(QtCore.QRect(23, posYAVISOS, 800, 330)) 
-        self.Avisos.setAlignment(QtCore.Qt.AlignCenter)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
-        self.Avisos.setFlat(False)
         self.Avisos.setStyleSheet("""
                                   font:20px;                                  
                                   font-weight: bold;
                                   color:#FF0000;
                                   """)
+        self.Avisos.setMinimumHeight(300)
+        self.Avisos.setMinimumWidth(300)
         self.tableWidget = QtGui.QTableWidget(self.Avisos)
         self.tableWidget.setGeometry(QtCore.QRect(5, 24, 790, 180))
         self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -344,16 +289,9 @@ class Ui_MainWindow(object):
         self.logo_Unesp.raise_()
         self.tableWidget.raise_()
         
+        
         #Gravação
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox.setGeometry(QtCore.QRect(10, 250, 400, 300))
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.groupBox.sizePolicy().hasHeightForWidth())
-        self.groupBox.setSizePolicy(sizePolicy)               
-        self.groupBox.setFlat(False)
-        self.groupBox.setCheckable(False)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.groupBox.setStyleSheet("""
                                     border:2px dotted darkgreen;
@@ -362,25 +300,80 @@ class Ui_MainWindow(object):
                                     """)
         self.gridLayout_GB = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))
+        self.groupBox.setMinimumHeight(300)
+        self.groupBox.setMinimumWidth(300)
+        
+        self.label_id = QtGui.QLabel(self.groupBox)
+        self.label_id.setObjectName(_fromUtf8("label_id"))
+        self.label_id.setStyleSheet("border:None")
+        self.gridLayout_GB.addWidget(self.label_id, 0, 1, 1, 1)
+        
+        self.inputIDC = QtGui.QLineEdit(self.groupBox)
+        self.inputIDC.setObjectName(_fromUtf8("inputIDC"))
+        self.gridLayout_GB.addWidget(self.inputIDC, 0, 2, 1, 1)
+        
+        self.label_dir = QtGui.QLabel(self.groupBox)
+        self.label_dir.setObjectName(_fromUtf8("label_dir"))
+        self.label_dir.setStyleSheet("border:None")
+        self.gridLayout_GB.addWidget(self.label_dir, 1, 1, 1, 1)
+        
+        self.inputDir = QtGui.QLineEdit(self.groupBox)
+        self.inputDir.setEnabled(True)
+        self.inputDir.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
+        self.inputDir.setText(_fromUtf8(""))
+        self.inputDir.setReadOnly(True)
+        self.inputDir.setObjectName(_fromUtf8("inputDir"))
+        self.gridLayout_GB.addWidget(self.inputDir, 1, 2, 1, 1)
+        
+        self.BtnDir = QtGui.QPushButton(self.groupBox)
+        self.BtnDir.setObjectName(_fromUtf8("BtnConn"))
+        self.BtnDir.setStyleSheet(_fromUtf8("""
+                                            QPushButton {                                                
+                                                background-image: url(imagens/dir.png);
+                                                background-repeat: no-repeat;
+                                                border:None;
+                                                border-radius:15px;
+                                                background-color:#F1F8E0;
+                                                
+                                            }
+                                            QPushButton:hover{
+                                                padding:2px;
+                                                background-image: url(imagens/dir.png);
+                                                background-repeat: no-repeat;
+                                                background-color:#F79F81;
+                                                border-radius:15px;
+                                            }
+                                            """))
+        self.gridLayout_GB.addWidget(self.BtnDir, 1, 3, 1, 1) 
+        
+        self.label_sessao = QtGui.QLabel(self.groupBox)       
+        self.label_sessao.setObjectName(_fromUtf8("label_sessao"))
+        self.label_sessao.setStyleSheet("border:None")
+        self.gridLayout_GB.addWidget(self.label_sessao, 2, 1, 1, 1)
+        
+        self.inputSessao = QtGui.QLineEdit(self.groupBox)
+        self.inputSessao.setEnabled(True)                      
+        self.inputSessao.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
+        self.inputSessao.setText(_fromUtf8(""))
+        self.inputSessao.setReadOnly(True)
+        self.inputSessao.setObjectName(_fromUtf8("inputSessao"))
+        self.gridLayout_GB.addWidget(self.inputSessao, 2, 2, 1, 1)  
         
         self.btnGB1x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))
-        self.gridLayout_GB.addWidget(self.btnGB1x1, 0, 3, 1, 1)
+        self.gridLayout_GB.addWidget(self.btnGB1x1, 3, 1, 1, 3)
         
         self.btnGB2x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))
-        self.gridLayout_GB.addWidget(self.btnGB2x1, 1, 3, 1, 1)
+        self.gridLayout_GB.addWidget(self.btnGB2x1, 4, 1, 1, 3)
         
         self.btnGB3x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))
-        self.gridLayout_GB.addWidget(self.btnGB3x1, 2, 3, 1, 1)
+        self.gridLayout_GB.addWidget(self.btnGB3x1, 5, 1, 1, 3)
 
                 
         ### BOTAO EMERGENCIA
         self.EMG = QtGui.QPushButton(self.centralwidget)
-        self.EMG.setGeometry(QtCore.QRect(30, posYEMG, 790, 50))
-        self.EMG.setMinimumSize(QtCore.QSize(0, 0))
-        self.EMG.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.EMG.setStyleSheet(_fromUtf8("color: rgb(255, 255, 0);\n""background-color: rgb(255, 0, 0)"))
         self.EMG.setObjectName(_fromUtf8("EMG"))
         MainWindow.setCentralWidget(self.centralwidget)        
@@ -388,6 +381,8 @@ class Ui_MainWindow(object):
         font.setBold(True)
         font.setWeight(75)
         self.EMG.setFont(font)
+        self.EMG.setMinimumHeight(50)
+        
         
         #Botões Configurações
         self.BtnConn.clicked.connect(self.conexao)
@@ -428,6 +423,14 @@ class Ui_MainWindow(object):
         # completerChat = QtGui.QCompleter(l_dicio)
         # completerChat.setCompletionMode(2)
         # self.textChat.setCompleter(completerChat)        
+
+        #Posições das box em grid
+        self.gridMain.addWidget(self.menubar, 0, 1, 1, 2)
+        self.gridMain.addWidget(self.Menu, 1, 1, 1, 1)
+        self.gridMain.addWidget(self.groupBox,2,1,1,1)
+        self.gridMain.addWidget(self.Movimentos, 1, 2, 2, 1)
+        self.gridMain.addWidget(self.EMG, 3, 1, 1, 2)        
+        self.gridMain.addWidget(self.Avisos, 4, 1, 1, 2)                        
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
@@ -622,27 +625,34 @@ class Ui_MainWindow(object):
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
+        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
 
         videoRecorderProxy.setResolution(2)
-        videoRecorderProxy.setFrameRate(15)
+        videoRecorderProxy.setFrameRate(24)
         videoRecorderProxy.setVideoFormat("MJPG")
         videoRecorderProxy.post.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
-    def stopVideoRecording(self):               
-        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)        
-        # Video file is saved on the robot in the
-        # /home/nao/recordings/cameras/ folder.
-        videoRecorderProxy.post.stopRecording()        
-    def naoAudioRecording(self):        
-        filename = self.gera_id_sessao()
-        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
         voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
                                              "wav",
                                              48000,
-                                             [0,0,1,0])
- 
-    def stopAudioRecording(self):        
+                                             [1,1,1,0])
+    def stopVideoRecording(self):               
+        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
         voiceProxy.post.stopMicrophonesRecording()
+        videoRecorderProxy.post.stopRecording()
+                
+    # def naoAudioRecording(self):        
+    #     filename = self.gera_id_sessao()
+    #     voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
+    #     voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
+    #                                          "wav",
+    #                                          48000,
+    #                                          [0,0,1,0])
+ 
+    # def stopAudioRecording(self):        
+    #     voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
+    #     voiceProxy.post.stopMicrophonesRecording()
+        
     def nivelBateria(self):                       
         proxyBattery = ALProxy("ALBattery",self.robotIP,PORT)
         status = proxyBattery.post.getBatteryCharge()
@@ -678,11 +688,14 @@ class Ui_MainWindow(object):
                 arqWav = localFilePath+"\\"+filename+"_NAO.wav"
                 arqAvi = localFilePath+"\\"+filename+"_NAO.avi"
                 if localFilePath != "":
+                    print("Fazendo download dos arquivos ... ")
                     sftp.get(videopath, arqAvi)
                     sftp.get(audiopath, arqWav)             
                     #print "Muxing"
+                    print("Juntando os arquivos ... ")
                     cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
                     subprocess.call(cmd, shell=True)
+                    print("Fim ... ")
                     # sftp.remove(videopath)
                     # sftp.remove(audiopath)
                     # file_manager(filename,localFilePath)
@@ -809,7 +822,7 @@ class Ui_MainWindow(object):
                 return
             else:
                 self.naoVideoRecording()
-                self.naoAudioRecording ()        
+                # self.naoAudioRecording ()        
                 aviso = "AVISO: Inicio da gravação do NAO."
                 self.enviarAviso(aviso)
         except BaseException:
@@ -819,7 +832,7 @@ class Ui_MainWindow(object):
     def stopNaoRecording(self):
         try:
             self.stopVideoRecording()
-            self.stopAudioRecording()
+            # self.stopAudioRecording()
             aviso = "AVISO: Fim da gravação do NAO."
             self.enviarAviso(aviso)
         except BaseException:
@@ -880,7 +893,8 @@ class Ui_MainWindow(object):
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
-            self.enviarAviso(str(aviso))     
+            self.enviarAviso(str(aviso))
+            self.nivelBateria()     
         except BaseException:
             aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
             self.enviarAviso(str(aviso))
@@ -985,7 +999,7 @@ class ImageWidget(QWidget):
         self._image = QImage()
         self.setWindowTitle('Nao')
 
-        self._imgWidth = 640
+        self._imgWidth = 640    
         self._imgHeight = 480
         self._cameraID = CameraID
         self.resize(self._imgWidth, self._imgHeight)
@@ -1002,7 +1016,7 @@ class ImageWidget(QWidget):
         self._registerImageClient(IP, PORT)
 
         # Trigget 'timerEvent' every 100 ms.
-        self.startTimer(100)
+        self.startTimer(10)
 
 
     def _registerImageClient(self, IP, PORT):
@@ -1012,7 +1026,7 @@ class ImageWidget(QWidget):
         self._videoProxy = ALProxy("ALVideoDevice", IP, PORT)
         resolution = vision_definitions.kQVGA  # 320 * 240
         colorSpace = vision_definitions.kRGBColorSpace
-        self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 5)
+        self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 24)
 
         # Select camera.
         self._videoProxy.setParam(vision_definitions.kCameraSelectID,
