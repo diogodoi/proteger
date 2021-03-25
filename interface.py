@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget,QTableView
-
+from PyQt4.QtCore import QTimer, QBasicTimer, QObject
 from naoqi import ALProxy, ALBroker, ALModule
 from avRecording import VideoRecorder,AudioRecorder,start_audio_recording,start_AVrecording,start_video_recording,file_manager,stop_AVrecording
 from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
@@ -38,7 +38,6 @@ try:
 except AttributeError:
     def _fromUtf8(s):
         return s
-
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8
     def _translate(context, text, disambig):
@@ -51,10 +50,6 @@ except AttributeError:
 conn = sqlite3.connect('BdProteger.db')
 cursor = conn.cursor()
 cursor.execute("SELECT * FROM IdKids")
-listaId = cursor.fetchall()
-lista_id = []
-for i,j in listaId:
-    lista_id.append(j)
 cursor.execute("SELECT * FROM IpRobot ORDER BY id DESC;")
 listaIp = cursor.fetchall()
 lista_ip = []
@@ -63,15 +58,9 @@ for i,j in listaIp:
 cursor.execute("SELECT * FROM IpRobot ORDER BY id DESC LIMIT 1")
 lastIp = cursor.fetchall()
 for i,j in lastIp:
-    last_ip = str(j)
-# cursor.execute("SELECT * FROM AutoComplete")
-# dicio = cursor.fetchall()
-# l_dicio = []
-# for i in dicio:
-#     i = unicode(i)    
-#     l_dicio.append(i)   
+    last_ip = str(j)     
 conn.close()
-PORT = 9559
+
 class Ui_MainWindow(object):
     def __init__(self):
         self.val_ip = ""
@@ -80,10 +69,12 @@ class Ui_MainWindow(object):
         self.AuxLeds = False
         self.pasta = ""
         self.robotIP = ""
+        self.PORT = 9559
+        self.TM = QTimer(self)
     def setupUi(self, MainWindow,height=height):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
         MainWindow.resize(850, height)
-        # MainWindow.setMinimumSize(QtCore.QSize(850, height))
+        MainWindow.setMinimumSize(QtCore.QSize(800, height))
         MainWindow.setMaximumSize(QtCore.QSize(850, height))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -131,8 +122,8 @@ class Ui_MainWindow(object):
                                 """)
         self.gridMenu = QtGui.QGridLayout(self.Menu)
         self.gridMenu.setObjectName(_fromUtf8("gridMenu"))
-        self.Menu.setMinimumHeight(200)
-        self.Menu.setMinimumWidth(300)
+        self.Menu.setMinimumHeight(150)
+        self.Menu.setMinimumWidth(200)
         
         self.label_Ip = QtGui.QLabel(self.Menu)        
         self.label_Ip.setObjectName(_fromUtf8("label_Ip"))
@@ -154,11 +145,24 @@ class Ui_MainWindow(object):
                                    """)
         self.gridMenu.addWidget(self.BtnConn, 1, 2, 1, 1)
         
+        self.BtnNaoView = QtGui.QPushButton(self.Menu)        
+        self.BtnNaoView.setObjectName(_fromUtf8("BtnNaoView"))
+        self.BtnNaoView.setEnabled(False)
+        self.BtnNaoView.setStyleSheet("""
+                                   QPushButton#hover {
+                                       background:#F5F6CE;
+                                   }
+                                background:#FFF;
+                                border:None;     
+                                   """)
+        self.gridMenu.addWidget(self.BtnNaoView, 2, 2, 1, 1)
+        
+        
         self.BtnEnc = QtGui.QPushButton(self.Menu)        
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
         self.BtnEnc.setEnabled(False)
         self.BtnEnc.setStyleSheet("border:None;")
-        self.gridMenu.addWidget(self.BtnEnc, 2, 2, 1, 1)
+        self.gridMenu.addWidget(self.BtnEnc, 3, 2, 1, 1)
         
 
         #### BOX MOVIMENTOS
@@ -226,6 +230,7 @@ class Ui_MainWindow(object):
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
+        self.Avisos.setAlignment(QtCore.Qt.AlignCenter)
         self.Avisos.setStyleSheet("""
                                   font:20px;                                  
                                   font-weight: bold;
@@ -233,6 +238,8 @@ class Ui_MainWindow(object):
                                   """)
         self.Avisos.setMinimumHeight(300)
         self.Avisos.setMinimumWidth(300)
+        
+        
         self.tableWidget = QtGui.QTableWidget(self.Avisos)
         self.tableWidget.setGeometry(QtCore.QRect(5, 24, 790, 180))
         self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -413,19 +420,13 @@ class Ui_MainWindow(object):
         
         #Recupera o ultimo ip adicionado na lista.
         self.inputIP.setText(last_ip)
-        #Cria uma lista para completar o id ou o ip
-        completerid = QtGui.QCompleter(lista_id)
-        self.inputIDC.setCompleter(completerid)
+        #Cria uma lista para completar ip
         completerip = QtGui.QCompleter(lista_ip)
         completerip.setCompletionMode(2)
         self.inputIP.setCompleter(completerip)
-        
-        # completerChat = QtGui.QCompleter(l_dicio)
-        # completerChat.setCompletionMode(2)
-        # self.textChat.setCompleter(completerChat)        
-
+ 
         #Posições das box em grid
-        self.gridMain.addWidget(self.menubar, 0, 1, 1, 2)
+        # self.gridMain.addWidget(self.menubar, 0, 1, 1, 2)
         self.gridMain.addWidget(self.Menu, 1, 1, 1, 1)
         self.gridMain.addWidget(self.groupBox,2,1,1,1)
         self.gridMain.addWidget(self.Movimentos, 1, 2, 2, 1)
@@ -448,6 +449,7 @@ class Ui_MainWindow(object):
         self.label_dir.setText(_translate("MainWindow", "Diretório", None))
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
         self.BtnEnc.setText(_translate("MainWindow", "Encerrar Sessão", None))
+        self.BtnNaoView.setText(_translate("MainWindow", "Câmera NAO", None))
         #Gravação
         self.groupBox.setTitle(_translate("ChatWindow", "Sessão", None))
         self.btnGB1x1.setText(_translate("MainWindow", "Iniciar Gravação", None))
@@ -463,7 +465,7 @@ class Ui_MainWindow(object):
         self.btn3x3.setText(_translate("MainWindow", "Toca aqui", None))
         self.btn2x3.setText(_translate("MainWindow", "Duvida", None))
         self.btn3x2.setText(_translate("MainWindow", "Palmas", None))
-        self.btn3x1.setText(_translate("MainWindow", "Sentar", None))
+        self.btn3x1.setText(_translate("MainWindow", "Levantar", None))
         self.btn4x1.setText(_translate("MainWindow", "Oi/Tchau", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
         self.btn4x3.setText(_translate("MainWindow", "Focar", None))
@@ -490,21 +492,23 @@ class Ui_MainWindow(object):
         cursor.execute("""INSERT OR IGNORE INTO IpRobot (IpRobot) VALUES(?);""",[NEWIP])
         conn.commit()
         conn.close()
-    def conexao(self):        
-        if (self.inputIDC.text() != ""):
-            pass
-        else:
-            aviso = "ERROR: Campo ID Criança precisa ser preenchido."
-            self.enviarAviso(aviso)
-            return            
+    def conexao(self): 
         try:
             self.robotIP = self.setIP()
-            #self.nivelBateria()
-            self.naoVision()
-            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+"."
+            self.TM.timeout.connect(self.nivelBateria)
+            self.TM.start(180000)
+            #self.nivelBateria()            
+            aviso = "AVISO: Conexão estabelecida com "+self.robotIP
             self.enviarAviso(aviso)
         except BaseException:
-            aviso = "ERROR: Falha na conexão com robô."
+            aviso = "ERROR: Falha na conexão com "+ self.robotIP
+            self.enviarAviso(aviso)
+            return
+        try:
+            self.basic_awareness = ALProxy("ALBasicAwareness", self.robotIP, self.PORT)
+            self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
+        except BaseException:
+            aviso = "ERROR: Falha na configuração da detecção de Face."
             self.enviarAviso(aviso)
             return
         # try:            
@@ -521,18 +525,13 @@ class Ui_MainWindow(object):
             self.BtnConn.setText("Conectado")            
             self.BtnConn.setEnabled(False)
             self.BtnEnc.setEnabled(True)
+            self.BtnNaoView.setEnabled(True)
             self.BtnConn.setStyleSheet("background-color:#40FF00;") 
         except BaseException:
             aviso = "ERROR: Falha na configuração."
             self.enviarAviso(aviso)
             return
-        try:
-            self.basic_awareness = ALProxy("ALBasicAwareness", self.robotIP, PORT)
-            self.motion = ALProxy("ALMotion", self.robotIP, PORT)
-        except BaseException:
-            aviso = "ERROR: Falha na configuração da detecção de Face."
-            self.enviarAviso(aviso)
-            return
+
     def desconectar(self):
         # try:
         #     self.salva_Texto()
@@ -548,9 +547,12 @@ class Ui_MainWindow(object):
         # except BaseException:
         #     aviso = "ERROR: Não foi possível salvar o video da WebCam."
         #     self.enviarAviso(aviso)
-        try:            
-            self.jan.destroy()
-            self.jan = None
+        
+        try:
+            self.TM.stop()
+            if self.jan != None:            
+                self.jan.destroy()
+                self.jan = None
         except BaseException:
             aviso = "ERROR:Falha ao fechar janelas."
             self.enviarAviso(aviso)        
@@ -566,6 +568,7 @@ class Ui_MainWindow(object):
             self.BtnConn.setEnabled(True)
             self.BtnEnc.setEnabled(False)
             self.inputSessao.setEnabled(True)
+            self.BtnNaoView.setEnabled(False)
             self.BtnConn.setStyleSheet("background:#FFF;border:None;")
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
@@ -595,12 +598,16 @@ class Ui_MainWindow(object):
             self.val_ip = str(self.inputIP.text())                        
             return self.val_ip
     def naoVision(self):
-        if self.jan is None:
-            IP = self.robotIP  # Replace here with your NaoQi's IP address.
-            PORT = 9559
-            CameraID = 0           
-            self.jan = ImageWidget(IP, PORT, CameraID)
-        self.jan.show()
+        try:
+            if self.jan is None:
+                IP = self.robotIP  # Replace here with your NaoQi's IP address.                
+                CameraID = 0 
+                self.jan = ImageWidget(IP, self.PORT, CameraID)
+            self.jan.show()
+        except BaseException:
+            aviso = "ERROR: Falha na conexão com a câmera do NAO."
+            self.enviarAviso(aviso)
+            return
     def salva_log(self):
         conn = sqlite3.connect('BdProteger.db')
         cursor = conn.cursor()
@@ -624,8 +631,8 @@ class Ui_MainWindow(object):
         
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
-        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
-        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
+        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
+        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,self.PORT)
 
         videoRecorderProxy.setResolution(2)
         videoRecorderProxy.setFrameRate(24)
@@ -634,34 +641,22 @@ class Ui_MainWindow(object):
         voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
                                              "wav",
                                              48000,
-                                             [1,1,1,0])
+                                             [0,0,1,0])
     def stopVideoRecording(self):               
-        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, PORT)
-        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
+        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
+        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,self.PORT)
         voiceProxy.post.stopMicrophonesRecording()
-        videoRecorderProxy.post.stopRecording()
-                
-    # def naoAudioRecording(self):        
-    #     filename = self.gera_id_sessao()
-    #     voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
-    #     voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
-    #                                          "wav",
-    #                                          48000,
-    #                                          [0,0,1,0])
- 
-    # def stopAudioRecording(self):        
-    #     voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,PORT)
-    #     voiceProxy.post.stopMicrophonesRecording()
+        videoRecorderProxy.post.stopRecording()                
+
         
     def nivelBateria(self):                       
-        proxyBattery = ALProxy("ALBattery",self.robotIP,PORT)
+        proxyBattery = ALProxy("ALBattery",self.robotIP,self.PORT)
         status = proxyBattery.post.getBatteryCharge()
-        if status <= 20:
-            aviso = "Atenção: Nível da bateria baixo "+ status+"%."
-            self.enviarAviso(str(aviso)) 
-        else:
-            aviso = "Atenção: Nível da bateria "+ status+"%."
-            self.enviarAviso(str(aviso))            
+        status = str(status)
+        if status <= 30:
+            aviso = "AVISO: Nível baixo de bateria: "+ status+ " % "+ "restantes."
+            self.enviarAviso(str(aviso))
+            
     def salvarVideoNAO(self):
         try:            
             self.getNAOfiles()                      
@@ -720,39 +715,32 @@ class Ui_MainWindow(object):
         if folder != None:
             self.pasta = str(folder)
             self.inputDir.setText(self.pasta)
-    
-    def voiceNao(self,msg):        
-        tts = ALProxy("ALTextToSpeech",self.robotIP,PORT)
-        tts.setLanguage("Brazilian")
-        tts.setParameter("speed", 70)
-        tts.setParameter("pitchShift", 1.2)
-        tts.post.say(msg)
-        self.SalvaTextoBD(msg)
+            
     def ledsOff(self):
-        motion = ALProxy("ALMotion", self.robotIP, PORT)
+        motion = ALProxy("ALMotion", self.robotIP, self.PORT)
         motion.post.rest() 
-        leds = ALProxy("ALLeds", self.robotIP, PORT)        
+        leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         name = "AllLeds"        
         leds.post.off(name)
     def startLife(self):
         self.AuxLeds = True
-        leds = ALProxy("ALLeds", self.robotIP, PORT)        
+        leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         names = ['BrainLeds','FaceLeds','ChestLeds','FeetLeds','EarLeds']
         for name in names:
             leds.post.on(name)
-        motion = ALProxy("ALMotion", self.robotIP, PORT)
+        motion = ALProxy("ALMotion", self.robotIP, self.PORT)
         motion.post.goToPosture("Stand",0.3)
-        self.face_fun()
+ 
     def faceDetector(self):
         try:
-            faceProxy = ALProxy("ALFaceDetection", self.robotIP, PORT)
+            faceProxy = ALProxy("ALFaceDetection", self.robotIP, self.PORT)
             period = 500
             faceProxy.subscribe("Test_Face", period, 0.0 )
         except Exception:
             aviso = "Erro na criação do faceproxy "
             self.enviarAviso(aviso)
         try:
-            memoryProxy = ALProxy("ALMemory", self.robotIP, PORT)
+            memoryProxy = ALProxy("ALMemory", self.robotIP, self.PORT)
             memValue = "FaceDetected"
             val = memoryProxy.getData(memValue) 
         except Exception:
@@ -810,11 +798,19 @@ class Ui_MainWindow(object):
                 self.basic_awareness.stopAwareness()
                 return
             else:        
-                self.olhaPraFrente()
-                time.sleep(5)
-        time.sleep(5)
+                self.olhaPraFrente()                
+        time.sleep(3)
         self.face_fun()
     def startNaoRecording(self):
+        if (self.inputIDC.text() != ""):
+            IDC = self.inputIDC.text()
+            aviso = "AVISO: ID " + IDC + " criado com sucesso."
+            aviso = str(aviso)
+            self.enviarAviso(aviso)
+        else:
+            aviso = "ERROR: Campo ID Criança precisa ser preenchido."
+            self.enviarAviso(aviso)
+            return
         try:
             if (self.pasta == ""):                
                 aviso = "AVISO: Nenhuma pasta foi selecionada."
@@ -822,7 +818,8 @@ class Ui_MainWindow(object):
                 return
             else:
                 self.naoVideoRecording()
-                # self.naoAudioRecording ()        
+                self.TM.timeout.connect(self.face_fun)
+                self.TM.start(5000)      
                 aviso = "AVISO: Inicio da gravação do NAO."
                 self.enviarAviso(aviso)
         except BaseException:
@@ -851,10 +848,7 @@ class Ui_MainWindow(object):
     def sentar(self):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-            msg = "Ahh!!"
-            self.voiceNao(msg)
             motionProxy.post.rest()
-                         
             aviso = "AVISO: Comando sentar enviado com sucesso."
             self.enviarAviso(aviso) 
             
@@ -886,15 +880,14 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return
         try:                                    
-            motion = ALProxy("ALMotion", self.robotIP, PORT)  
-            postureProxy = ALProxy("ALRobotPosture", self.robotIP, PORT)
+            motion = ALProxy("ALMotion", self.robotIP, self.PORT)  
+            postureProxy = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
             motion.post.angleInterpolation(names, keys, times, True)            
             postureProxy.post.goToPosture("Stand",0.3)
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
             self.enviarAviso(str(aviso))
-            self.nivelBateria()     
         except BaseException:
             aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
             self.enviarAviso(str(aviso))
@@ -908,7 +901,7 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return
         try:                                    
-            motion = ALProxy("ALMotion", self.robotIP, PORT) 
+            motion = ALProxy("ALMotion", self.robotIP, self.PORT) 
             motion.post.angleInterpolation(names, keys, times, True) 
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             self.enviarAviso(str(aviso))     
@@ -920,19 +913,16 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            msg = "Sim !!"
+            
             self.btn1x1.setEnabled(False)
-            self.movimento(concordar.sim)        
-            self.voiceNao(msg)
+            self.movimento(concordar.sim)
             self.btn1x1.setEnabled(True)
     def discordar(self):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            msg = "Não!!"
             self.btn1x2.setEnabled(False)
             self.movimento(discordar.nao)
-            self.voiceNao(msg)
             self.btn1x2.setEnabled(True)
     def focus(self):
         if (self.BtnConn.text() == "Conectar"):
@@ -960,8 +950,6 @@ class Ui_MainWindow(object):
             return
         else:
             self.movimento(duvida.duvida)
-            msg = "ué?"
-            self.voiceNao(msg)
     def palmas(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -971,8 +959,6 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            msg = "Tóca aqui !"
-            self.voiceNao(msg)
             self.movimento(toca_aqui.tocaAqui)
     def tchau(self):
         if (self.BtnConn.text() == "Conectar"):
@@ -983,8 +969,6 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            msg = "beijos"
-            self.voiceNao(msg)
             self.movimento(beijos.beijos)
     
 class ImageWidget(QWidget):
@@ -1013,7 +997,7 @@ class ImageWidget(QWidget):
         # This will contain this alImage we get from Nao.
         self._alImage = None
 
-        self._registerImageClient(IP, PORT)
+        self._registerImageClient(IP, self.PORT)
 
         # Trigget 'timerEvent' every 100 ms.
         self.startTimer(10)
@@ -1023,7 +1007,7 @@ class ImageWidget(QWidget):
         """
         Register our video module to the robot.
         """
-        self._videoProxy = ALProxy("ALVideoDevice", IP, PORT)
+        self._videoProxy = ALProxy("ALVideoDevice", IP, self.PORT)
         resolution = vision_definitions.kQVGA  # 320 * 240
         colorSpace = vision_definitions.kRGBColorSpace
         self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 24)
