@@ -492,11 +492,10 @@ class Ui_MainWindow(object):
             self.proxyBattery = ALProxy("ALBattery",self.robotIP,self.PORT)
             self.bateria = self.proxyBattery.post.getBatteryCharge()
             self.bateria = str(self.bateria)
-            self.TMb = QTimer(self)
-            self.TMb.timeout.connect(self.nivelBateria)
-            self.TMb.start(10000)
+            self.BatThread = QThread()
+            self.BatThread.started.connect(self.nivelBateria)
+            self.BatThread.start()
             aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" bateria "+ self.bateria +"%"+ " carregada."
-            #
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Falha na conexão com "+ self.robotIP
@@ -545,9 +544,12 @@ class Ui_MainWindow(object):
         # except BaseException:
         #     aviso = "ERROR: Não foi possível salvar o video da WebCam."
         #     self.enviarAviso(aviso)
-        
+        try:            
+            self.BatThread.stop()
+        except BaseException:
+            aviso = "ERROR:Falha ao encerrar thread nível de bateria."
+            self.enviarAviso(aviso) 
         try:
-            self.TMb.stop()
             if self.jan != None:            
                 self.jan.destroy()
                 self.jan = None
@@ -596,12 +598,13 @@ class Ui_MainWindow(object):
             self.val_ip = str(self.inputIP.text())                        
             return self.val_ip
     def naoVision(self):
-        if self.jan is None:
-            IP = self.robotIP                
+        try:
+            IP = self.robotIP
+            PORT = 9559                
             CameraID = 0 
-            self.jan = ImageWidget(IP, self.PORT, CameraID)
+            self.jan = ImageWidget(IP, PORT, CameraID)
             self.jan.show()
-        else:
+        except Exception:
             aviso = "ERROR: Falha na conexão com a câmera do NAO."
             self.enviarAviso(aviso)
 
@@ -631,15 +634,11 @@ class Ui_MainWindow(object):
             faceProxy = ALProxy("ALFaceDetection", self.robotIP, self.PORT)
             period = 500
             faceProxy.subscribe("Test_Face", period, 0.0 )
-        except Exception:
-            aviso = "Erro na criação do faceproxy "
-            self.enviarAviso(aviso)
-        try:
             memoryProxy = ALProxy("ALMemory", self.robotIP, self.PORT)
             memValue = "FaceDetected"
             val = memoryProxy.getData(memValue) 
         except Exception:
-            aviso = "Erro na criação do memory proxy:"
+            aviso = "ERROR:Não Foi possível criar o proxy de detecção de face."
             self.enviarAviso(aviso)
             
         if(val and isinstance(val, list) and len(val) >= 2): 
@@ -666,23 +665,22 @@ class Ui_MainWindow(object):
                     aviso = "faces detected, but it seems getData is invalid. ALValue ="
                     self.enviarAviso(aviso)
         else:
-                # print "No face detected"
-                return False
+            return False
         faceProxy.unsubscribe("Test_Face")
     def face_fun(self):
-        if self.basic_awareness.isRunning() != True:
+        self.aux = self.basic_awareness.isAwarenessRunning()
+        if (self.aux != True):
             self.basic_awareness.startAwareness()
-            Face = False
-            while Face !=True:
-                Face = self.faceDetector()            
-                if (Face == True):
-                    self.basic_awareness.stopAwareness()
-                    return
-                else:        
-                    self.olhaPraFrente()
-        time.sleep(3)
-        self.face_fun()
-        
+        Face = False
+        while (Face !=True):
+            Face = self.faceDetector()            
+            if (Face == True):
+                self.basic_awareness.stopAwareness()
+                return
+            else:        
+                self.olhaPraFrente()
+                time.sleep(3)
+      
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
@@ -701,17 +699,17 @@ class Ui_MainWindow(object):
         voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,self.PORT)
         voiceProxy.post.stopMicrophonesRecording()
         videoRecorderProxy.post.stopRecording()                
-
-        
+       
     def nivelBateria(self):
         status = self.proxyBattery.post.getBatteryCharge()
         status = str(status)
         if status <= 30:
             aviso = "AVISO: Nível baixo de bateria: "+ status+ " % "+ "restantes."
             self.enviarAviso(str(aviso))
-        else:
-            aviso = "AVISO: Nível baixo de bateria: "+ status+ " %."
-            self.enviarAviso(str(aviso))
+            
+        self.TMb = QTimer(self)
+        self.TMb.timeout.connect(self.nivelBateria)
+        self.TMb.start(180000)
             
     def salvarVideoNAO(self):
         try:
@@ -786,13 +784,15 @@ class Ui_MainWindow(object):
         leds.post.off(name)
     def startLife(self):
         self.AuxLeds = True
+        motionProxy = ALProxy("ALMotion", self.robotIP, self.PORT)
         leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         names = ['BrainLeds','FaceLeds','ChestLeds','FeetLeds','EarLeds']
         for name in names:
             leds.post.on(name)
         motion = ALProxy("ALMotion", self.robotIP, self.PORT)
-        motion.post.goToPosture("Stand",0.3)
- 
+        motion.post.wakeUp()
+        # motion.post.goToPosture("Stand",0.3)
+        motionProxy.post.setBreathConfig([['Bpm', 20.0], ['Amplitude', 0.5]])
     
     def olhaPraFrente(self):
 
@@ -811,44 +811,64 @@ class Ui_MainWindow(object):
         self.motion.angleInterpolation(names, keys, times, True)
     
     def facedetector(self):
-        self.faceThread = QThread(self.face_fun)
-        self.faceThread.start()
+            self.faceThread = QThread()
+            self.faceThread.started.connect(self.face_fun)
+            self.faceThread.start()
         
     def startNaoRecording(self):
-        if (self.inputIDC.text() != ""):
-            IDC = self.inputIDC.text()
-            aviso = "AVISO: ID " + IDC + " criado com sucesso."
-            aviso = str(aviso)
-            self.enviarAviso(aviso)
-        else:
+        try:
+            if (self.inputIDC.text() != ""):
+                IDC = self.inputIDC.text()
+                aviso = "AVISO: ID " + IDC + " criado com sucesso."
+                aviso = str(aviso)
+                self.enviarAviso(aviso)
+        except BaseException:
             aviso = "ERROR: Campo ID Criança precisa ser preenchido."
             self.enviarAviso(aviso)
             return
         try:
-            if (self.pasta == ""):                
+            if (self.pasta != ""):
+                pass 
+        except BaseException:
                 aviso = "AVISO: Nenhuma pasta foi selecionada."
                 self.enviarAviso(aviso)
                 return
-            else:
-                self.naoVideoRecording()
-                self.facedetector()
-                # self.TMf = QTimer(self)
-                # self.TMf.timeout.connect(self.faceThread)
-                # self.TMf.start(3000)      
-                aviso = "AVISO: Inicio da gravação do NAO."
-                self.enviarAviso(aviso)
+        try:
+            self.startLife()
+            aviso = "AVISO: Iniciando a vida, ligando leds e levantando."
+        except BaseException:
+            aviso = "ERROR: Falha na inicialização da vida."
+            self.enviarAviso(aviso)
+            return 
+        try:
+            self.TMf = QTimer(self)
+            self.TMf.timeout.connect(self.facedetector)
+            self.TMf.start(7000)
+            aviso = "AVISO: Detector de face inicializado com sucesso."
+            self.enviarAviso(aviso)
+        except BaseException:
+            aviso = "ERROR: Falha na inicialização do detector de face."
+            self.enviarAviso(aviso)
+            return 
+        try:
+            self.naoVideoRecording()
+            aviso = "AVISO: Inicio da gravação do NAO."
+            self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Falha no incio da gravação do NAO."
             self.enviarAviso(aviso)
             return    
     def stopNaoRecording(self):
-        try:
-            
+        try:            
             self.stopVideoRecording()
-            # self.TMf.stop()
-            # self.stopAudioRecording()
             aviso = "AVISO: Fim da gravação do NAO."
             self.enviarAviso(aviso)
+        except BaseException:
+            aviso = "ERROR:Falha ao encerrar a gravação do NAO."
+            self.enviarAviso(aviso)
+        try:
+            self.TMf.stop()
+            self.ledsOff()
         except BaseException:
             aviso = "ERROR:Falha ao encerrar a gravação do NAO."
             self.enviarAviso(aviso)         
@@ -930,7 +950,6 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            
             self.btn1x1.setEnabled(False)
             self.movimento(concordar.sim)
             self.btn1x1.setEnabled(True)
@@ -1014,17 +1033,17 @@ class ImageWidget(QWidget):
         # This will contain this alImage we get from Nao.
         self._alImage = None
 
-        self._registerImageClient(IP, self.PORT)
+        self._registerImageClient(IP, PORT)
 
         # Trigget 'timerEvent' every 100 ms.
-        self.startTimer(10)
+        self.startTimer(100)
 
 
     def _registerImageClient(self, IP, PORT):
         """
         Register our video module to the robot.
         """
-        self._videoProxy = ALProxy("ALVideoDevice", IP, self.PORT)
+        self._videoProxy = ALProxy("ALVideoDevice", IP, PORT)
         resolution = vision_definitions.kQVGA  # 320 * 240
         colorSpace = vision_definitions.kRGBColorSpace
         self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 24)
@@ -1075,10 +1094,7 @@ class ImageWidget(QWidget):
         """
         self._unregisterImageClient()
         
-class FaceDetector(QObject,Ui_MainWindow):    
-    def __init__(self):
-        self.robotIP = self.setIP()
-        self.PORT = 9559
+
 
 
     
