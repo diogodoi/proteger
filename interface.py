@@ -311,6 +311,8 @@ class Ui_MainWindow(object):
         
         self.inputIDC = QtGui.QLineEdit(self.groupBox)
         self.inputIDC.setObjectName(_fromUtf8("inputIDC"))
+        self.inputIDC.setEnabled(False)
+        # self.inputIDC.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
         self.gridLayout_GB.addWidget(self.inputIDC, 0, 2, 1, 1)
         
         self.label_dir = QtGui.QLabel(self.groupBox)
@@ -362,14 +364,17 @@ class Ui_MainWindow(object):
         
         self.btnGB1x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))
+        self.btnGB1x1.setEnabled(False)
         self.gridLayout_GB.addWidget(self.btnGB1x1, 3, 1, 1, 3)
         
         self.btnGB2x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))
+        self.btnGB2x1.setEnabled(False)
         self.gridLayout_GB.addWidget(self.btnGB2x1, 4, 1, 1, 3)
         
         self.btnGB3x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))
+        self.btnGB3x1.setEnabled(False)
         self.gridLayout_GB.addWidget(self.btnGB3x1, 5, 1, 1, 3)
 
                 
@@ -445,7 +450,7 @@ class Ui_MainWindow(object):
         self.label_sessao.setText(_translate("MainWindow", "ID Sessão", None))
         self.label_dir.setText(_translate("MainWindow", "Diretório", None))
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
-        self.BtnEnc.setText(_translate("MainWindow", "Encerrar Sessão", None))
+        self.BtnEnc.setText(_translate("MainWindow", "Desconectar", None))
         
         #Avisos
         self.label_avisos.setText(_translate("MainWindow", "Avisos", None))
@@ -466,7 +471,7 @@ class Ui_MainWindow(object):
         self.btn3x3.setText(_translate("MainWindow", "Toca aqui", None))
         self.btn2x3.setText(_translate("MainWindow", "Duvida", None))
         self.btn3x2.setText(_translate("MainWindow", "Palmas", None))
-        self.btn3x1.setText(_translate("MainWindow", "Levantar", None))
+        self.btn3x1.setText(_translate("MainWindow", "Sentar", None))
         self.btn4x1.setText(_translate("MainWindow", "Oi/Tchau", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
         # self.btn4x3.setText(_translate("MainWindow", "Focar", None))
@@ -510,15 +515,6 @@ class Ui_MainWindow(object):
             aviso = "ERROR: Falha na conexão com "+ self.robotIP
             self.enviarAviso(aviso)
             return
-        # try:            
-        #     session_ID = self.gera_id_sessao()         
-        #     start_AVrecording(session_ID)
-        #     aviso = "AVISO: Conexão feita com webcam."
-        #     self.enviarAviso(aviso)
-        # except BaseException:
-        #     aviso = "ERROR: Falha na conexão com Webcam."
-        #     self.enviarAviso(aviso)
-        #     return
         try:
             self.basic_awareness = ALProxy("ALBasicAwareness", self.robotIP, self.PORT)
             self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
@@ -532,27 +528,15 @@ class Ui_MainWindow(object):
             self.BtnConn.setEnabled(False)
             self.BtnEnc.setEnabled(True)
             self.BtnNaoView.setEnabled(True)
-            self.BtnConn.setStyleSheet("background-color:#40FF00;") 
+            self.BtnConn.setStyleSheet("background-color:#40FF00;")
+            self.btnGB1x1.setEnabled(True) 
+            self.inputIDC.setEnabled(True)
         except BaseException:
             aviso = "ERROR: Falha na configuração."
             self.enviarAviso(aviso)
             return
 
     def desconectar(self):
-        # try:
-        #     self.salva_Texto()
-        # except BaseException:
-        #     aviso = "ERROR:Falha ao salvar chat."
-        #     self.enviarAviso(aviso)
-        # try:
-        #     nomeSessao = self.gera_id_sessao()
-        #     stop_AVrecording(nomeSessao,self.pasta)
-        #     file_manager(nomeSessao,self.pasta)
-        #     aviso = "AVISO: Video Webcam salva com sucesso."
-        #     self.enviarAviso(aviso)
-        # except BaseException:
-        #     aviso = "ERROR: Não foi possível salvar o video da WebCam."
-        #     self.enviarAviso(aviso)
         try:            
             self.BatThread.exit()
         except BaseException:
@@ -571,7 +555,7 @@ class Ui_MainWindow(object):
             aviso = "ERROR:Falha ao salvar log."
             self.enviarAviso(aviso) 
         try:           
-            #self.desligar()
+            self.desligar()
             self.robotIP = ""
             self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
@@ -784,9 +768,9 @@ class Ui_MainWindow(object):
                         sftp.close()
                         return 
         except BaseException:
-            aviso = "ERROR:Falha na conexão com NAO."
+            aviso = "ERROR:Falha na inicialização do download dos arquivos."
             self.enviarAviso(aviso)
-            sftp.close()
+            return
     def newTreadFiles(self):
         self.filesThread = QThread()
         self.filesThread.started.connect(self.getNAOfiles)
@@ -890,6 +874,10 @@ class Ui_MainWindow(object):
             self.naoVideoRecording()
             aviso = "AVISO: Inicio da gravação do NAO."
             self.enviarAviso(aviso)
+            self.btnGB1x1.setEnabled(False)
+            self.btnGB1x1.setStyleSheet("background-color:#40FF00;")
+            self.btnGB1x1.setText("Gravando...")
+            self.btnGB2x1.setEnabled(True)
         except BaseException:
             aviso = "ERROR: Falha no incio da gravação do NAO."
             self.enviarAviso(aviso)
@@ -905,6 +893,9 @@ class Ui_MainWindow(object):
         try:
             self.TMf.stop()
             self.ledsOff()
+            self.btnGB3x1.setEnabled(True)
+            self.btnGB1x1.setText("Iniciar Gravação")
+            self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
         except BaseException:
             aviso = "ERROR:Falha ao encerrar detector de face."
             self.enviarAviso(aviso)         
@@ -953,35 +944,13 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return
         try: 
-            movimento = self.motion.post.angleInterpolation(names, keys, times, True)
-            # movimento
-            self.motion.post.wait(movimento,0)
-            # self.motion.post.wakeUp()            
+            self.motion.post.angleInterpolation(names, keys, times, True)
+            self.motion.post.wakeUp()            
             self.posture.post.goToPosture("Stand",0.25)
-           
-                        
-            
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
             self.enviarAviso(str(aviso))
-        except BaseException:
-            aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
-            self.enviarAviso(str(aviso))
-            return
-    def aux_mov(self,object):
-        try:
-            nomefunc = object.__name__
-            names, times, keys = object()
-        except BaseException:
-            aviso = "Falha no envio dos dados."
-            self.enviarAviso(aviso)
-            return
-        try:                                    
-            motion = ALProxy("ALMotion", self.robotIP, self.PORT) 
-            motion.post.angleInterpolation(names, keys, times, True) 
-            aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
-            self.enviarAviso(str(aviso))     
         except BaseException:
             aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
             self.enviarAviso(str(aviso))
