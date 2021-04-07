@@ -12,4 +12,4 @@ Reservas/
 *.qrc
 fechaNAO.py
 .idea/
-BdProteger.db
+*.db
