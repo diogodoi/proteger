@@ -43,6 +43,9 @@ for i,j in lastIp:
     last_ip = str(j)     
 conn.close()
 
+iprobo = ""
+nomeS = ""
+pastaS = ""
 class Ui_MainWindow(object):
     def __init__(self):
         self.val_ip = ""
@@ -52,6 +55,7 @@ class Ui_MainWindow(object):
         self.pasta = ""
         self.robotIP = ""
         self.PORT = 9559
+        self.bateria = ""
         
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
@@ -371,12 +375,7 @@ class Ui_MainWindow(object):
         self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))
         self.btnGB2x1.setEnabled(False)
         self.gridLayout_GB.addWidget(self.btnGB2x1, 4, 1, 1, 3)
-        
-        self.btnGB3x1 = QtGui.QPushButton(self.groupBox)
-        self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))
-        self.btnGB3x1.setEnabled(False)
-        self.gridLayout_GB.addWidget(self.btnGB3x1, 5, 1, 1, 3)
-
+       
                 
         ### BOTAO EMERGENCIA
         self.EMG = QtGui.QPushButton(self.centralwidget)
@@ -417,7 +416,6 @@ class Ui_MainWindow(object):
         self.BtnDir.clicked.connect(self.getDir)
         self.btnGB1x1.clicked.connect(self.startNaoRecording)        
         self.btnGB2x1.clicked.connect(self.stopNaoRecording)
-        self.btnGB3x1.clicked.connect(self.newTreadFiles)
 
         
         #Recupera o ultimo ip adicionado na lista.
@@ -459,7 +457,6 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(_translate("ChatWindow", "Sessão", None))
         self.btnGB1x1.setText(_translate("MainWindow", "Iniciar Gravação", None))
         self.btnGB2x1.setText(_translate("MainWindow", "Encerrar Gravação", None))
-        self.btnGB3x1.setText(_translate("MainWindow", "Download video NAO", None))
         self.BtnNaoView.setText(_translate("MainWindow", "Câmera NAO", None))
         #Movimentos
         self.Movimentos.setTitle(_translate("MainWindow", "Movimentos", None))
@@ -490,6 +487,8 @@ class Ui_MainWindow(object):
         id_da_sessao = time.strftime("%Y%m%d"+ "_" + val , t)        
         self.inputSessao.setText(str(id_da_sessao))
         self.inputSessao.setEnabled(False)
+        global nomeS
+        nomeS = id_da_sessao        
         return id_da_sessao
     def salva_ip(self):
         conn = sqlite3.connect('BdProteger.db')
@@ -512,7 +511,7 @@ class Ui_MainWindow(object):
             aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" bateria "+ self.bateria +"%"+ " carregada."
             self.enviarAviso(aviso)
         except BaseException:
-            aviso = "ERROR: Falha na conexão com "+ self.robotIP
+            aviso = "ERROR: Falha na conexão com "+ self.robotIP +"."
             self.enviarAviso(aviso)
             return
         try:
@@ -555,13 +554,16 @@ class Ui_MainWindow(object):
             aviso = "ERROR:Falha ao salvar log."
             self.enviarAviso(aviso) 
         try:           
-            self.desligar()
+            # self.desligar()
             self.robotIP = ""
             self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
             self.BtnEnc.setEnabled(False)
             self.inputSessao.setEnabled(True)
             self.BtnNaoView.setEnabled(False)
+            self.btnGB1x1.setEnabled(False)
+            self.btnGB2x1.setEnabled(False)
+            self.inputIDC.setEnabled(False)
             self.BtnConn.setStyleSheet("background:#FFF;border:None;")
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
@@ -589,7 +591,9 @@ class Ui_MainWindow(object):
         conn.close()
     
     def setIP(self):
-            self.val_ip = str(self.inputIP.text())                        
+            self.val_ip = str(self.inputIP.text())
+            global iprobo
+            iprobo = self.val_ip                                    
             return self.val_ip
     def naoVision(self):
         try:
@@ -601,7 +605,6 @@ class Ui_MainWindow(object):
         except Exception:
             aviso = "ERROR: Falha na conexão com a câmera do NAO."
             self.enviarAviso(aviso)
-
     
     def salva_log(self):
         conn = sqlite3.connect('BdProteger.db')
@@ -678,7 +681,6 @@ class Ui_MainWindow(object):
             self.olhaPraFrente()
             self.faceThread.exit()            
             return        
-
       
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
@@ -700,8 +702,9 @@ class Ui_MainWindow(object):
         videoRecorderProxy.post.stopRecording()                
        
     def nivelBateria(self):
+        status = ""
         status = self.proxyBattery.post.getBatteryCharge()
-        status = str(status)
+        self.bateria = str(status)
         if status <= 30:
             aviso = "AVISO: Nível baixo de bateria: "+ status+ " % "+ "restantes."
             self.enviarAviso(str(aviso))
@@ -709,71 +712,15 @@ class Ui_MainWindow(object):
         self.TMb = QTimer(self)
         self.TMb.timeout.connect(self.nivelBateria)
         self.TMb.start(180000)
-            
-    def salvarVideoNAO(self):
-        try:
-            self.btnGB3x1.setEnabled(False)            
-            self.getNAOfiles()
-            self.btnGB3x1.setEnabled(True) 
-        except BaseException:
-            aviso = "ERROR:Não foi possível salvar o video do NAO."
-            self.enviarAviso(aviso)
-            self.btnGB3x1.setEnabled(True) 
-    def getNAOfiles(self):
-        try:
-            myHostname = str(self.setIP())
-            myUsername = "nao"
-            myPassword = "nao"
-            with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
-                aviso = "AVISO:Conexão com " + myHostname + " estabelecida com sucesso."
-                self.enviarAviso(aviso)
-                filename = self.gera_id_sessao()
-                # Define the file that you want to download from the remote directory
-                videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
-                audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.wav'
-
-                # Define the local path where the file will be saved
-                # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
-                localFilePath = self.pasta             
-                arqWav = localFilePath+"\\"+filename+"_NAO.wav"
-                arqAvi = localFilePath+"\\"+filename+"_NAO.avi"                
-                if localFilePath != "":
-                    try:
-                        aviso = "AVISO:Início do download do vídeo e do audio da sessão " + filename +"."
-                        self.enviarAviso(aviso)
-                        sftp.get(videopath, arqAvi)
-                        sftp.get(audiopath, arqWav)
-                        aviso = "AVISO:Video e audio da sessão " + filename + " salvos com sucesso."
-                        self.enviarAviso(aviso)
-                    except BaseException:
-                        aviso = "ERROR:Falha no inicio do download dos arquivos."
-                        self.enviarAviso(aviso)
-                        sftp.close()
-                        return             
-                    #print "Muxing"
-                    try:
-                        aviso = "AVISO:Mixando audio e vídeo."
-                        self.enviarAviso(aviso)
-                        cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
-                        subprocess.call(cmd, shell=True)
-                        aviso = "AVISO:Audio e video mixados com sucesso."
-                        self.enviarAviso(aviso)
-                        # sftp.remove(videopath)
-                        # sftp.remove(audiopath)
-                        # file_manager(filename,localFilePath)
-                        sftp.close()
-                    except BaseException:
-                        aviso = "ERROR:Falha na mixagem do vídeo e audio dos arquivos."
-                        self.enviarAviso(aviso)
-                        sftp.close()
-                        return 
-        except BaseException:
-            aviso = "ERROR:Falha na inicialização do download dos arquivos."
-            self.enviarAviso(aviso)
-            return
+    
     def newTreadFiles(self):
         self.filesThread = QThread()
-        self.filesThread.started.connect(self.getNAOfiles)
+        self.worker = ConexaoSftp()
+        self.worker.moveToThread(self.filesThread)
+        self.filesThread.started.connect(self.worker.getfiles)
+        self.worker.finished.connect(self.filesThread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.filesThread.finished.connect(self.filesThread.deleteLater)        
         self.filesThread.start()   
     #Funções dos botões
     def desligar(self):
@@ -794,6 +741,8 @@ class Ui_MainWindow(object):
         folder = QFileDialog.getExistingDirectory(self,"Selecione um pasta para salvar o video.")            
         if folder != None:
             self.pasta = str(folder)
+            global pastaS
+            pastaS = self.pasta
             self.inputDir.setText(self.pasta)
             
     def ledsOff(self):
@@ -874,7 +823,8 @@ class Ui_MainWindow(object):
             self.naoVideoRecording()
             aviso = "AVISO: Inicio da gravação do NAO."
             self.enviarAviso(aviso)
-            self.btnGB1x1.setEnabled(False)
+            self.inputIDC.setEnabled(False)
+            self.btnGB1x1.setEnabled(False)            
             self.btnGB1x1.setStyleSheet("background-color:#40FF00;")
             self.btnGB1x1.setText("Gravando...")
             self.btnGB2x1.setEnabled(True)
@@ -892,12 +842,23 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
         try:
             self.TMf.stop()
-            self.ledsOff()
-            self.btnGB3x1.setEnabled(True)
-            self.btnGB1x1.setText("Iniciar Gravação")
-            self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+            self.ledsOff()          
         except BaseException:
             aviso = "ERROR:Falha ao encerrar detector de face."
+            self.enviarAviso(aviso)
+            
+        try:            
+            self.newTreadFiles()
+            aviso = "AVISO:Início do download dos arquivos."
+            self.enviarAviso(aviso)
+            self.btnGB1x1.setEnabled(True)
+            self.btnGB1x1.setText(_fromUtf8("Iniciar Gravação"))
+            self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+            self.btnGB2x1.setEnabled(False)
+            self.inputIDC.setEnabled(True)
+            self.inputIDC.setText("")  
+        except BaseException:
+            aviso = "ERROR:Falha no download dos arquivos."
             self.enviarAviso(aviso)         
     #Funções Movimentos
     def levantar(self):
@@ -922,15 +883,14 @@ class Ui_MainWindow(object):
     def funcSentarLevantar(self):
         if (self.BtnConn.text() == "Conectar"):
             return
-        else:
-            if self.aux == False:
+        else:                        
+            if (self.btn3x1.text() == "Sentar"):                
                 self.btn3x1.setEnabled(False)
                 self.sentar()
                 self.aux = True
                 self.btn3x1.setText("Levantar")
                 self.btn3x1.setEnabled(True)
-            else:            
-                self.aux = False
+            else:
                 self.btn3x1.setEnabled(False)
                 self.levantar()
                 self.btn3x1.setText("Sentar")
@@ -943,9 +903,9 @@ class Ui_MainWindow(object):
             aviso = "Falha no envio dos dados."
             self.enviarAviso(aviso)
             return
-        try: 
-            self.motion.post.angleInterpolation(names, keys, times, True)
-            self.motion.post.wakeUp()            
+        try:
+            self.motion.post.wakeUp() 
+            self.motion.post.angleInterpolation(names, keys, times, True)                        
             self.posture.post.goToPosture("Stand",0.25)
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             if (self.btn3x1.text()== "Levantar"):
@@ -969,12 +929,6 @@ class Ui_MainWindow(object):
             self.btn1x2.setEnabled(False)
             self.movimento(discordar.nao)
             self.btn1x2.setEnabled(True)
-    def focus(self):
-        if (self.BtnConn.text() == "Conectar"):
-            return
-        else:
-            self.movimento(focus.focus)
-            self.movimento(arm_pose.arm_pose)
     def nossa(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -1103,7 +1057,79 @@ class ImageWidget(QWidget):
         When the widget is deleted, we unregister our naoqi video module.
         """
         self._unregisterImageClient()
+
+
+class ConexaoSftp(QObject):
+    finished = pyqtSignal()    
+    
+    
+    def id_sessao(self):        
+        idsessao = str(nomeS)
+        print(idsessao)        
+        return idsessao
+    def ipname(self):
+        ipsessao = str(iprobo)
+        print(ipsessao)        
+        return ipsessao
+    def getfolder(self):
+        return pastaS
         
+    def getfiles(self):
+        try:
+            myHostname = str(self.ipname())
+            print(self.ipname())
+            myUsername = "nao"
+            myPassword = "nao"
+            with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
+                print("AVISO:Conexão com " + myHostname + " estabelecida com sucesso.")
+                # self.enviarAviso(aviso)
+                
+                filename = self.id_sessao()
+                print(filename)
+                # Define the file that you want to download from the remote directory
+                videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
+                audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.wav'
+
+                # Define the local path where the file will be saved
+                # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
+                localFilePath = self.getfolder()             
+                arqWav = localFilePath+"\\"+filename+"_NAO.wav"
+                arqAvi = localFilePath+"\\"+filename+"_NAO.avi"                
+                if localFilePath != "":
+                    try:
+                        print("AVISO:Início do download do vídeo e do audio da sessão " + filename +".")
+                        # self.enviarAviso(aviso)
+                        sftp.get(videopath, arqAvi)
+                        sftp.get(audiopath, arqWav)
+                        print("AVISO:Video e audio da sessão " + filename + " salvos com sucesso.")
+                        # self.enviarAviso(aviso)
+                    except BaseException:
+                        print "ERROR:Falha no inicio do download dos arquivos."
+                        # self.enviarAviso(aviso)
+                        sftp.close()
+                        return             
+                    #print "Muxing"
+                    try:
+                        print("AVISO:Mixando audio e vídeo.") 
+                        # self.enviarAviso(aviso)
+                        cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
+                        subprocess.call(cmd, shell=True)
+                        print("AVISO:Audio e video mixados com sucesso.")
+                        # self.enviarAviso(aviso)
+                        sftp.remove(videopath)
+                        sftp.remove(audiopath)
+                        file_manager(filename,localFilePath)
+                        sftp.close()
+                    except BaseException:
+                        print("ERROR:Falha na mixagem do vídeo e audio dos arquivos.")
+                        # self.enviarAviso(aviso)
+                        sftp.close()
+                        return 
+        except BaseException:
+            print("ERROR:Falha na inicialização do download dos arquivos.")
+            # self.enviarAviso(aviso)
+            return
+          
 
 
 
