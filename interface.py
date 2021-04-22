@@ -513,15 +513,15 @@ class Ui_MainWindow(object):
     def conexao(self): 
         try:
             self.robotIP = self.setIP()
-            self.proxyBattery = ALProxy("ALBattery",self.robotIP,self.PORT)
-            self.bateria = self.proxyBattery.post.getBatteryCharge()
+            # self.proxyBattery = ALProxy("ALBattery",self.robotIP,self.PORT)
+            # self.bateria = self.proxyBattery.post.getBatteryCharge()
             self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
             self.posture = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
-            self.bateria = str(self.bateria)
-            self.BatThread = QThread()
-            self.BatThread.started.connect(self.nivelBateria)
-            self.BatThread.start()
-            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" bateria "+ self.bateria +"%"+ " carregada."
+            # self.bateria = str(self.bateria)
+            # self.BatThread = QThread()
+            # self.BatThread.started.connect(self.nivelBateria)
+            # self.BatThread.start()
+            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" foi estabelecida " # bateria "+ self.bateria +"%"+ " carregada."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Falha na conexão com "+ self.robotIP +"."
@@ -548,11 +548,12 @@ class Ui_MainWindow(object):
             return
 
     def desconectar(self):
-        try:            
-            self.BatThread.exit()
-        except BaseException:
-            aviso = "ERROR:Falha ao encerrar thread nível de bateria."
-            self.enviarAviso(aviso) 
+        # try:            
+        #     self.BatThread.exit()
+        # except BaseException:
+        #     aviso = "ERROR:Falha ao encerrar thread nível de bateria."
+        #     self.enviarAviso(aviso)
+        #     return 
         # try:
         #     if self.jan != None:            
         #         self.jan.destroy()
@@ -564,9 +565,10 @@ class Ui_MainWindow(object):
             self.salva_log()
         except BaseException:
             aviso = "ERROR:Falha ao salvar log."
-            self.enviarAviso(aviso) 
+            self.enviarAviso(aviso)
+            return 
         try:           
-            # self.desligar()
+            self.desligar()
             self.robotIP = ""
             self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
@@ -579,7 +581,8 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)                  
         except BaseException:
             aviso = "ERROR: Falha na conexão com o robô."
-            self.enviarAviso(aviso)            
+            self.enviarAviso(aviso)
+            return            
     def enviarAviso(self,aviso):
         conn = sqlite3.connect('BdProteger.db')
         conn.text_factory = str
@@ -917,7 +920,7 @@ class Ui_MainWindow(object):
         try:
             self.motion.post.wakeUp() 
             self.motion.post.angleInterpolation(names, keys, times, True)                        
-            self.posture.post.goToPosture("Stand",0.25)
+            # self.posture.post.goToPosture("Stand",0.25)
             aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
