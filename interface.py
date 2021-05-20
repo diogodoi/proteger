@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+# from packages import *
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget,QTableView
 from PyQt4.QtCore import QTimer, QBasicTimer, QObject, Qt,QThread, pyqtSignal
 from naoqi import ALProxy, ALBroker, ALModule
 # from avRecording import VideoRecorder,AudioRecorder,start_audio_recording,start_AVrecording,start_video_recording,file_manager,stop_AVrecording
-from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
+from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose, fengshui
 import vision_definitions
 import sys
 import sqlite3
@@ -13,7 +14,6 @@ import threading
 import pysftp
 import subprocess
 import random
-
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -52,8 +52,8 @@ class Ui_MainWindow(object):
         self.val_ip = ""
         self.aux = False        
         self.AuxLeds = False
-        self.pasta = ""
-        self.robotIP = ""
+        self.pasta = pastaS
+        self.robotIP = iprobo
         self.PORT = 9559
         self.bateria = ""
         
@@ -413,7 +413,7 @@ class Ui_MainWindow(object):
         self.btn3x3.clicked.connect(self.tocaqui)
         self.btn4x1.clicked.connect(self.tchau)
         self.btn4x2.clicked.connect(self.beijos)
-        # self.btn4x3.clicked.connect(self.focus)
+        # self.btn4x3.clicked.connect(self.fengshui)
         #Botão Emergência
         self.EMG.clicked.connect(self.desligar)
         
@@ -480,7 +480,7 @@ class Ui_MainWindow(object):
         self.btn3x1.setText(_translate("MainWindow", "Sentar", None))
         self.btn4x1.setText(_translate("MainWindow", "Oi/Tchau", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
-        # self.btn4x3.setText(_translate("MainWindow", "Focar", None))
+        # self.btn4x3.setText(_translate("MainWindow", "FengShui", None))
         
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Hora", None))
@@ -1001,7 +1001,12 @@ class Ui_MainWindow(object):
             self.movimento(beijos.beijos)
     
     #extras
-    
+    # def fengshui(self):
+    #     if (self.BtnConn.text() == "Conectar"):
+    #         return
+    #     else:
+    #         self.motion.wakeUp()
+    #         self.movimento(fengshui.fengShui)        
     def virarDireita(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -1054,56 +1059,82 @@ class ImageWidget(QWidget):
         """
         Register our video module to the robot.
         """
-        self._videoProxy = ALProxy("ALVideoDevice", IP, PORT)
-        resolution = vision_definitions.kQVGA  # 320 * 240
-        colorSpace = vision_definitions.kRGBColorSpace
-        self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 24)
+        try: 
+            self._videoProxy = ALProxy("ALVideoDevice", IP, PORT)
+            resolution = vision_definitions.kQVGA  # 320 * 240
+            colorSpace = vision_definitions.kRGBColorSpace
+            self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 24)
 
-        # Select camera.
-        self._videoProxy.setParam(vision_definitions.kCameraSelectID,
-                                  self._cameraID)
-
+            # Select camera.
+            self._videoProxy.setParam(vision_definitions.kCameraSelectID,
+                                    self._cameraID)
+            
+        except:
+            print("Falha no registro do cliente")
+            return
 
     def _unregisterImageClient(self):
         """
         Unregister our naoqi video module.
         """
-        if self._imgClient != "":
-            self._videoProxy.unsubscribe(self._imgClient)
-
+        try: 
+            if self._imgClient != "":
+                self._videoProxy.unsubscribe(self._imgClient)
+        except:
+            print("Falha no registro do cliente")
+            return
 
     def paintEvent(self, event):
         """
         Draw the QImage on screen.
         """
-        painter = QPainter(self)
-        painter.drawImage(painter.viewport(), self._image)
+        try:
+            painter = QPainter(self)
+            painter.drawImage(painter.viewport(), self._image)
+        except:
+            print("Falha no paintEventer")
+            return
 
 
     def _updateImage(self):
         """
         Retrieve a new image from Nao.
         """
-        self._alImage = self._videoProxy.getImageRemote(self._imgClient)
-        self._image = QImage(self._alImage[6],           # Pixel array.
-                             self._alImage[0],           # Width.
-                             self._alImage[1],           # Height.
-                             QImage.Format_RGB888)
+        try:
+            self._alImage = self._videoProxy.getImageRemote(self._imgClient)
+            self._image = QImage(self._alImage[6],           # Pixel array.
+                                self._alImage[0],           # Width.
+                                self._alImage[1],           # Height.
+                                QImage.Format_RGB888)
+        except:
+            print("Erro Update image")
 
 
     def timerEvent(self, event):
         """
         Called periodically. Retrieve a nao image, and update the widget.
         """
-        self._updateImage()
-        self.update()
+        try:
+            self._updateImage()
+        except:
+            print("Falha no Timer eventer updateImage")
+            return
+        try:  
+            self.update()
+        except:
+            print("Falha no Timer eventer update")
+            return
 
 
     def __del__(self):
         """
         When the widget is deleted, we unregister our naoqi video module.
         """
-        self._unregisterImageClient()
+        try:
+            self._unregisterImageClient()
+        except:
+            print("Falha no del")
+            return
     
 class VisionNAO(QObject):
     finished = pyqtSignal()
