@@ -1,6 +1,14 @@
 # GUIPsyin: Interface Gráfica de Interação Psicológica Infantil
 
-Projeto de Mestrado
+Desenvolvido por Diogo Henrique Godoi
+
+### Objetivo
+O objetivo deste projeto é desenvolver uma interface para a manipulação do Robô NAO.
+
+### Manual de Utilização
+
+
+
 
 
 
