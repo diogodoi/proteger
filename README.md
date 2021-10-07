@@ -2,12 +2,16 @@
 
 Desenvolvido por Diogo Henrique Godoi
 
-### Objetivo
+#### Objetivo
 O objetivo deste projeto é desenvolver uma interface para a manipulação do Robô NAO.
 
-### Manual de Utilização
+## Manual de Utilização
 
+#### Informações Gerais
 
+#### Bibliotecas necessárias
+
+#### Módulos da Interface
 
 
 
