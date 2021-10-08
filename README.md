@@ -27,6 +27,8 @@ Para a instalação das outras bibliotecas utilize pip install requeriments.txt
 
 A interface GUIPsyin é responsável pela comunicação do computador com o robô NAO. Primeiro é necessário obter-se o IP do robô NAO, esse IP pode ser adquirido pressionando-se o botão no meio do peito do robô NAO.
 
+![alt text](https://github.com/diogodoi/proteger/blob/main/Guipsyn.png "GUIPsyin")
+
 Figura 1: Interface GUIPsyin, em 1) Configurações , 2) Sessão,3) Movimentos, 4) Botão de emergência, 5) Área de Avisos.
 
 ATENÇÃO: qualquer procedimento que necessite ligar ou operar o robô NAO, deve ser feito de preferência por pessoas habilitadas para isso,  com muito cuidado e máxima atenção pois, o robô não é um brinquedo, pode eventualmente causar lesões superficiais na pele, através de suas partes móveis e movimentos ou pode ser danificado permanentemente, por ocasião de eventuais quedas. O robô não deve ser operado por crianças.
