@@ -37,9 +37,9 @@ ATENÇÃO: qualquer procedimento que necessite ligar ou operar o robô NAO, deve
 
 2. Sessão:  Para iniciar a sessão pressione o botão “Iniciar Vida”, este botão faz o robô NAO, ativar o detector de face, além de fazer o robo levantar e ficar pronto para a fazer os movimentos pré-programados. O botão “Encerrar Vida”, coloca o robo NAO em modo standby, ou seja, ele irá sentar, e todos os leds irão desligar, além do sistema de detecção de face. Utilize este botão para nos intervalos da sessão, assim você não irá precisar reconectar o robô toda vez que iniciar uma sessão.
 
-3. Movimentos: Aqui encontram-se os movimentos desenvolvidos para a interação
+3. Botão EMERGÊNCIA: Esse botão desliga o robô instantaneamente, utilize somente em caso de EMERGÊNCIA, pois pode danificar o robô NAO.
 
-4. Botão EMERGÊNCIA: Esse botão desliga o robô instantaneamente, utilize somente em caso de EMERGÊNCIA, pois pode danificar o robô NAO.
+4. Movimentos: Aqui encontram-se os movimentos desenvolvidos para a interação
 
 5. Avisos: Aqui são dadas as mensagens de erros, avisos e alertas.	
 
