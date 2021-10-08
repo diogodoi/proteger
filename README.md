@@ -13,6 +13,7 @@ O método que será utilizado nas sessões de terapia  é chamado de Mágico de 
 Esse método consiste fazer com que o usuário acredite que esteja interagindo com uma entidade inteligente, nesse casa o NAO, no entanto tal entidade é controlada pelo mágico,
 ou seja pelo assistente (psicólogo).
 
+obs: É necessário ter o python 2.7.18 instalado em seu computador para a utilização da interface.
 #### Bibliotecas necessárias
 Para utilizar a interface é necessário ter o Naoqi 2.1.4.13 e o PyQt4 instalado em um ambiente virtual em seu computador.
 
