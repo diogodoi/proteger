@@ -33,15 +33,15 @@ Figura 1: Interface GUIPsyin, em 1) Configurações , 2) Sessão,3) Movimentos, 
 
 ATENÇÃO: qualquer procedimento que necessite ligar ou operar o robô NAO, deve ser feito de preferência por pessoas habilitadas para isso,  com muito cuidado e máxima atenção pois, o robô não é um brinquedo, pode eventualmente causar lesões superficiais na pele, através de suas partes móveis e movimentos ou pode ser danificado permanentemente, por ocasião de eventuais quedas. O robô não deve ser operado por crianças.
 
-Configurações: no espaço em branco na frente de IP Robô coloque o IP do robô NAO, esse IP é obtido quando você pressiona o botão localizado no peito do robô.Após isso pressione em Conectar, o botão irá ficar verde se a conexão estabelecida, caso não seja, verifique a aba de avisos. Assim que a conexão for estabelecida, pressione o botão” Câmera NAO” para abrir uma janela que transmite o vídeo da câmera localizada na testa do NÃO. Quando quiser encerrar a conexão com o robô pressione o botão “Desconectar”.  Antes de iniciar esta conexão o computador e o NAO devem estar conectados na mesma rede wifi. As instruções para conexão podem ser obtidas aqui.
+1. Configurações: no espaço em branco na frente de IP Robô coloque o IP do robô NAO, esse IP é obtido quando você pressiona o botão localizado no peito do robô.Após isso pressione em Conectar, o botão irá ficar verde se a conexão estabelecida, caso não seja, verifique a aba de avisos. Assim que a conexão for estabelecida, pressione o botão” Câmera NAO” para abrir uma janela que transmite o vídeo da câmera localizada na testa do NÃO. Quando quiser encerrar a conexão com o robô pressione o botão “Desconectar”.  Antes de iniciar esta conexão o computador e o NAO devem estar conectados na mesma rede wifi. As instruções para conexão podem ser obtidas aqui.
 
-Sessão:  Para iniciar a sessão pressione o botão “Iniciar Vida”, este botão faz o robô NAO, ativar o detector de face, além de fazer o robo levantar e ficar pronto para a fazer os movimentos pré-programados. O botão “Encerrar Vida”, coloca o robo NAO em modo standby, ou seja, ele irá sentar, e todos os leds irão desligar, além do sistema de detecção de face. Utilize este botão para nos intervalos da sessão, assim você não irá precisar reconectar o robô toda vez que iniciar uma sessão.
+2. Sessão:  Para iniciar a sessão pressione o botão “Iniciar Vida”, este botão faz o robô NAO, ativar o detector de face, além de fazer o robo levantar e ficar pronto para a fazer os movimentos pré-programados. O botão “Encerrar Vida”, coloca o robo NAO em modo standby, ou seja, ele irá sentar, e todos os leds irão desligar, além do sistema de detecção de face. Utilize este botão para nos intervalos da sessão, assim você não irá precisar reconectar o robô toda vez que iniciar uma sessão.
 
-Movimentos: Aqui encontram-se os movimentos desenvolvidos para a interação
+3. Movimentos: Aqui encontram-se os movimentos desenvolvidos para a interação
 
-Botão EMERGÊNCIA: Esse botão desliga o robô instantaneamente, utilize somente em caso de EMERGÊNCIA, pois pode danificar o robô NAO.
+4. Botão EMERGÊNCIA: Esse botão desliga o robô instantaneamente, utilize somente em caso de EMERGÊNCIA, pois pode danificar o robô NAO.
 
-Avisos: Aqui são dadas as mensagens de erros, avisos e alertas.	
+5. Avisos: Aqui são dadas as mensagens de erros, avisos e alertas.	
 
 
 
