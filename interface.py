@@ -3,13 +3,10 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget,QTableView
 from PyQt4.QtCore import QTimer, QBasicTimer, QObject, Qt,QThread, pyqtSignal
 from naoqi import ALProxy, ALBroker, ALModule
-# from avRecording import VideoRecorder,AudioRecorder,start_audio_recording,start_AVrecording,start_video_recording,file_manager,stop_AVrecording
 from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
 import vision_definitions
-import sys
 import sqlite3
 import time
-import threading
 import pysftp
 import subprocess
 import random
@@ -873,20 +870,7 @@ class Ui_MainWindow(object):
                 aviso = "ERROR:Falha ao encerrar detector de face."
                 self.enviarAviso(aviso)
                 return
-                
-            # try:            
-            #     self.newTreadFiles()
-            #     aviso = "AVISO:Início do download dos arquivos."
-            #     self.enviarAviso(aviso)
-            #     self.btnGB1x1.setEnabled(True)
-            #     self.btnGB1x1.setText(_fromUtf8("Iniciar Gravação"))
-            #     self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
-            #     self.btnGB2x1.setEnabled(False)
-            #     self.inputIDC.setEnabled(True)
-            #     self.inputIDC.setText("")  
-            # except BaseException:
-            #     aviso = "ERROR:Falha no download dos arquivos."
-            #     self.enviarAviso(aviso)         
+                         
 
     #Funções Movimentos
     def levantar(self):
@@ -1120,80 +1104,4 @@ class VisionNAO(QObject):
             aviso = "ERROR: Falha na conexão com a câmera do NAO."
             print(aviso)
             return
-            
-
-
-class ConexaoSftp(QObject):
-    finished = pyqtSignal()    
-       
-    def id_sessao(self):        
-        idsessao = str(nomeS)
-        print(idsessao)        
-        return idsessao
-    def ipname(self):
-        ipsessao = str(iprobo)
-        print(ipsessao)        
-        return ipsessao
-    def getfolder(self):
-        return pastaS
         
-    def getfiles(self):
-        try:
-            myHostname = str(self.ipname())
-            print(self.ipname())
-            myUsername = "nao"
-            myPassword = "nao"
-            with pysftp.Connection(host=myHostname, username=myUsername, password=myPassword) as sftp:
-                print("AVISO:Conexão com " + myHostname + " estabelecida com sucesso.")
-                # self.enviarAviso(aviso)
-                
-                filename = self.id_sessao()
-                print(filename)
-                # Define the file that you want to download from the remote directory
-                videopath = '/home/nao/recordings/cameras/'+filename+'_NAO.avi'
-                audiopath = '/home/nao/recordings/cameras/'+filename+'_NAO.wav'
-
-                # Define the local path where the file will be saved
-                # or absolute "C:\Users\sdkca\Desktop\TUTORIAL.txt"
-                localFilePath = self.getfolder()             
-                arqWav = localFilePath+"\\"+filename+"_NAO.wav"
-                arqAvi = localFilePath+"\\"+filename+"_NAO.avi"                
-                if localFilePath != "":
-                    try:
-                        print("AVISO:Início do download do vídeo e do audio da sessão " + filename +".")
-                        # self.enviarAviso(aviso)
-                        sftp.get(videopath, arqAvi)
-                        sftp.get(audiopath, arqWav)
-                        print("AVISO:Video e audio da sessão " + filename + " salvos com sucesso.")
-                        # self.enviarAviso(aviso)
-                    except BaseException:
-                        print "ERROR:Falha no inicio do download dos arquivos."
-                        # self.enviarAviso(aviso)
-                        sftp.close()
-                        return             
-                    #print "Muxing"
-                    try:
-                        print("AVISO:Mixando audio e vídeo.") 
-                        # self.enviarAviso(aviso)
-                        cmd = "ffmpeg -ac 1 -channel_layout stereo -i " +arqWav+ " -i "+arqAvi+" -pix_fmt yuv420p " +localFilePath+"\\"+filename + "_First.avi"
-                        subprocess.call(cmd, shell=True)
-                        print("AVISO:Audio e video mixados com sucesso.")
-                        # self.enviarAviso(aviso)
-                        sftp.remove(videopath)
-                        sftp.remove(audiopath)
-                        file_manager(filename,localFilePath)
-                        sftp.close()
-                    except BaseException:
-                        print("ERROR:Falha na mixagem do vídeo e audio dos arquivos.")
-                        # self.enviarAviso(aviso)
-                        sftp.close()
-                        return 
-        except BaseException:
-            print("ERROR:Falha na inicialização do download dos arquivos.")
-            # self.enviarAviso(aviso)
-            return
-          
-
-
-
-    
