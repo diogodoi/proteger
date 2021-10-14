@@ -7,9 +7,8 @@ from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia
 import vision_definitions
 import sqlite3
 import time
-import pysftp
-import subprocess
 import random
+import os
 
 
 try:
@@ -25,10 +24,37 @@ except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
 
+
+#Verifica se o banco de dados existe, se não existir ele é criado.
+try:
+    bd = open('BdProteger.db')
+    bd.close()
+except:
+    conn = sqlite3.connect('BdProteger.db')
+    conn.execute(''' CREATE TABLE "IpRobot" (
+	"id"	INTEGER,
+	"IpRobot"	TEXT UNIQUE,
+	PRIMARY KEY("id"))
+                 ''')
+    conn.execute(''' 
+    CREATE TABLE "Sessao" (
+	"ip"	INTEGER UNIQUE,
+	"Data"	TEXT NOT NULL,
+	"Hora"	TEXT NOT NULL,
+	"Aviso"	TEXT NOT NULL,
+	PRIMARY KEY("ip" AUTOINCREMENT))    
+''')
+    conn.execute("INSERT INTO IpRobot (IpRobot) VALUES ('192.168.0.1')");
+    conn.commit()
+    conn.close()
+    
+try:
+    os.mkdir("Logs")
+except:
+    pass
 #Abre Banco de dados e adiciona os valores no completer, e pega o ultimo valor de IP inserido.
 conn = sqlite3.connect('BdProteger.db')
 cursor = conn.cursor()
-cursor.execute("SELECT * FROM IdKids")
 cursor.execute("SELECT * FROM IpRobot ORDER BY id DESC;")
 listaIp = cursor.fetchall()
 lista_ip = []
@@ -44,6 +70,7 @@ iprobo = ""
 nomeS = ""
 pastaS = ""
 jan = None
+
 class Ui_MainWindow(object):
     def __init__(self):
         self.val_ip = ""
@@ -67,8 +94,6 @@ class Ui_MainWindow(object):
 
                         
                           """)
-        # background:#F1F8E0; border-radius:15px; color: darkgreen;     
-        # MainWindow.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
@@ -93,11 +118,7 @@ class Ui_MainWindow(object):
         #Configurações
         self.Menu = QtGui.QGroupBox(self.centralwidget)        
         self.Menu.setObjectName(_fromUtf8("Menu"))
-        # self.Menu.setStyleSheet("""                                
-        #                         font:16px;
-        #                         border-radius:15px;
-        #                         border:2px solid darkgreen;
-        #                         """)
+
         self.gridMenu = QtGui.QGridLayout(self.Menu)
         self.gridMenu.setObjectName(_fromUtf8("gridMenu"))
         self.Menu.setMinimumSize(200,200)
@@ -105,7 +126,7 @@ class Ui_MainWindow(object):
         
         self.label_Ip = QtGui.QLabel(self.Menu)        
         self.label_Ip.setObjectName(_fromUtf8("label_Ip"))
-        # self.label_Ip.setStyleSheet("border:None")
+
         self.gridMenu.addWidget(self.label_Ip, 0, 1, 1, 1)        
       
         self.inputIP = QtGui.QLineEdit(self.Menu)                        
@@ -114,44 +135,26 @@ class Ui_MainWindow(object):
               
         self.BtnConn = QtGui.QPushButton(self.Menu)               
         self.BtnConn.setObjectName(_fromUtf8("BtnConn"))
-        # self.BtnConn.setStyleSheet("""
-        #                            QPushButton#hover {
-        #                                background:#F5F6CE;
-        #                            }
-        #                         background:#FFF;
-        #                         border:None;     
-        #                            """)
+
         self.gridMenu.addWidget(self.BtnConn, 1, 2, 1, 1)
         
         self.BtnNaoView = QtGui.QPushButton(self.Menu)        
         self.BtnNaoView.setObjectName(_fromUtf8("BtnNaoView"))
         self.BtnNaoView.setEnabled(False)
-        # self.BtnNaoView.setStyleSheet("""
-        #                            QPushButton#hover {
-        #                                background:#F5F6CE;
-        #                            }
-        #                         background:#FFF;
-        #                         border:None;     
-        #                            """)
+
         self.gridMenu.addWidget(self.BtnNaoView, 2, 2, 1, 1)
        
         self.BtnEnc = QtGui.QPushButton(self.Menu)        
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
         self.BtnEnc.setEnabled(False)
-        # self.BtnEnc.setStyleSheet("border:None;")
+
         self.gridMenu.addWidget(self.BtnEnc, 3, 2, 1, 1)
         
 
         #### BOX MOVIMENTOS
         self.Movimentos = QtGui.QGroupBox(self.centralwidget)        
         self.Movimentos.setObjectName(_fromUtf8("Movimentos"))
-        # self.Movimentos.setStyleSheet("""
-        #                                 border:2px dotted darkgreen;
-        #                                 border-radius:15px;
-        #                                 font:16px;
-
-                                        
-        #                                 """)
+        
         self.Movimentos.setMinimumWidth(450)
         self.Movimentos.setMaximumWidth(800)
         
@@ -202,18 +205,11 @@ class Ui_MainWindow(object):
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
         self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)
         
-        # self.btn4x3 = QtGui.QPushButton(self.Movimentos)
-        # self.btn4x3.setObjectName(_fromUtf8("btn4x3"))
-        # self.gridLayout_2.addWidget(self.btn4x3, 3, 8, 1, 1)
+
         
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
-        # self.Avisos.setStyleSheet("""
-        #                           font:20px;                                  
-        #                           font-weight: bold;
-        #                           color:#FF0000;
-        #                           """)
         self.Avisos.setMinimumHeight(300)
         self.Avisos.setMinimumWidth(300)
 
@@ -284,15 +280,7 @@ class Ui_MainWindow(object):
        #Gravação
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
-        # self.groupBox.setStyleSheet("""
-        #                             QGroupBox {
-        #                                 padding-top:10px;
-        #                                 };
-                                    
-                                                                          
-        #                             font:16px;
-        #                             """)
-        #border:2px dotted darkgreen; border-radius:10px;       
+    
         self.gridLayout_GB = QtGui.QGridLayout(self.groupBox)
         self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))
         
@@ -300,63 +288,6 @@ class Ui_MainWindow(object):
         self.groupBox.setMinimumSize(200,200)
         self.groupBox.setMaximumSize(500,500)
         
-        # self.label_id = QtGui.QLabel(self.groupBox)
-        # self.label_id.setObjectName(_fromUtf8("label_id"))
-        # self.label_id.setStyleSheet("border:None")
-        # self.gridLayout_GB.addWidget(self.label_id, 0, 1, 1, 1)
-        
-        # self.inputIDC = QtGui.QLineEdit(self.groupBox)
-        # self.inputIDC.setObjectName(_fromUtf8("inputIDC"))
-        # self.inputIDC.setEnabled(False)
-        # self.inputIDC.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
-        # self.gridLayout_GB.addWidget(self.inputIDC, 0, 2, 1, 1)
-        
-        # self.label_dir = QtGui.QLabel(self.groupBox)
-        # self.label_dir.setObjectName(_fromUtf8("label_dir"))
-        # self.label_dir.setStyleSheet("border:None")
-        # self.gridLayout_GB.addWidget(self.label_dir, 1, 1, 1, 1)
-        
-        # self.inputDir = QtGui.QLineEdit(self.groupBox)
-        # self.inputDir.setEnabled(True)
-        # self.inputDir.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
-        # self.inputDir.setText(_fromUtf8(""))
-        # self.inputDir.setReadOnly(True)
-        # self.inputDir.setObjectName(_fromUtf8("inputDir"))
-        # self.gridLayout_GB.addWidget(self.inputDir, 1, 2, 1, 1)
-        
-        # self.BtnDir = QtGui.QPushButton(self.groupBox)
-        # self.BtnDir.setObjectName(_fromUtf8("BtnConn"))
-        # self.BtnDir.setStyleSheet(_fromUtf8("""
-        #                                     QPushButton {                                                
-        #                                         background-image: url(imagens/dir.png);
-        #                                         background-repeat: no-repeat;
-        #                                         border:None;
-        #                                         border-radius:15px;
-        #                                         background-color:#F1F8E0;
-                                                
-        #                                     }
-        #                                     QPushButton:hover{
-        #                                         padding:2px;
-        #                                         background-image: url(imagens/dir.png);
-        #                                         background-repeat: no-repeat;
-        #                                         background-color:#F79F81;
-        #                                         border-radius:15px;
-        #                                     }
-        #                                     """))
-        # self.gridLayout_GB.addWidget(self.BtnDir, 1, 3, 1, 1) 
-        
-        # self.label_sessao = QtGui.QLabel(self.groupBox)       
-        # self.label_sessao.setObjectName(_fromUtf8("label_sessao"))
-        # self.label_sessao.setStyleSheet("border:None")
-        # self.gridLayout_GB.addWidget(self.label_sessao, 2, 1, 1, 1)
-        
-        # self.inputSessao = QtGui.QLineEdit(self.groupBox)
-        # self.inputSessao.setEnabled(True)                      
-        # self.inputSessao.setStyleSheet(_fromUtf8("background:#A4A4A4;\n" "\n" ""))
-        # self.inputSessao.setText(_fromUtf8(""))
-        # self.inputSessao.setReadOnly(True)
-        # self.inputSessao.setObjectName(_fromUtf8("inputSessao"))
-        # self.gridLayout_GB.addWidget(self.inputSessao, 2, 2, 1, 1)  
         
         self.btnGB1x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))
@@ -410,12 +341,10 @@ class Ui_MainWindow(object):
         self.btn3x3.clicked.connect(self.tocaqui)
         self.btn4x1.clicked.connect(self.tchau)
         self.btn4x2.clicked.connect(self.beijos)
-        # self.btn4x3.clicked.connect(self.focus)
         #Botão Emergência
         self.EMG.clicked.connect(self.desligar)
         
         #Botões Sessão
-        # self.BtnDir.clicked.connect(self.getDir)
         self.btnGB1x1.clicked.connect(self.startNaoRecording)        
         self.btnGB2x1.clicked.connect(self.stopNaoRecording)
         self.btnGB3x1.clicked.connect(self.virarEsquerda)
@@ -660,7 +589,7 @@ class Ui_MainWindow(object):
                                 return True
 
                 except Exception:
-                        aviso = "faces detected, but it seems getData is invalid. ALValue ="
+                        aviso = "faces detected, but it seems getData is invalid."
                         self.enviarAviso(aviso)
             else:
                 return False
@@ -687,20 +616,12 @@ class Ui_MainWindow(object):
     def naoVideoRecording(self):        
         filename = self.gera_id_sessao()
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
-        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,self.PORT)
-
         videoRecorderProxy.setResolution(2)
         videoRecorderProxy.setFrameRate(24)
         videoRecorderProxy.setVideoFormat("MJPG")
         videoRecorderProxy.post.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
-        voiceProxy.post.startMicrophonesRecording("/home/nao/recordings/cameras/"+str(filename)+"_NAO.wav",
-                                             "wav",
-                                             48000,
-                                             [0,0,1,0])
     def stopVideoRecording(self):               
         videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
-        voiceProxy = ALProxy("ALAudioRecorder",self.robotIP,self.PORT)
-        voiceProxy.post.stopMicrophonesRecording()
         videoRecorderProxy.post.stopRecording()                
        
     def nivelBateria(self):
@@ -726,15 +647,6 @@ class Ui_MainWindow(object):
         # self.naovisionThread.finished.connect(self.naovisionThread.deleteLater)        
         self.naovisionThread.start()
         
-    def newTreadFiles(self):
-        self.filesThread = QThread()
-        self.worker = ConexaoSftp()
-        self.worker.moveToThread(self.filesThread)
-        self.filesThread.started.connect(self.worker.getfiles)
-        self.worker.finished.connect(self.filesThread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.filesThread.finished.connect(self.filesThread.deleteLater)        
-        self.filesThread.start()   
     #Funções dos botões
     def desligar(self):
         try:
@@ -801,26 +713,10 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            # try:
-            #     if (self.inputIDC.text() != ""):
-            #         IDC = self.inputIDC.text()
-            #         aviso = "AVISO: ID " + IDC + " criado com sucesso."
-            #         aviso = str(aviso)
-            #         self.enviarAviso(aviso)
-            # except BaseException:
-            #     aviso = "ERROR: Campo ID Criança precisa ser preenchido."
-            #     self.enviarAviso(aviso)
-            #     return
-            # try:
-            #     if (self.pasta != ""):
-            #         pass 
-            # except BaseException:
-            #         aviso = "AVISO: Nenhuma pasta foi selecionada."
-            #         self.enviarAviso(aviso)
-            #         return
             try:
                 self.startLife()
                 aviso = "AVISO: Iniciando a vida, ligando leds e levantando."
+                self.enviarAviso(aviso)
             except BaseException:
                 aviso = "ERROR: Falha na inicialização da vida."
                 self.enviarAviso(aviso)
@@ -836,36 +732,18 @@ class Ui_MainWindow(object):
             except BaseException:
                 aviso = "ERROR: Falha na inicialização do detector de face."
                 self.enviarAviso(aviso)
-                return 
-            # try:
-            #     # self.naoVideoRecording()
-            #     # aviso = "AVISO: Inicio da gravação do NAO."
-            #     # self.enviarAviso(aviso)
-            #     self.inputIDC.setEnabled(False)
-            #     self.btnGB1x1.setEnabled(False)            
-            #     self.btnGB1x1.setStyleSheet("background-color:#40FF00;")
-            #     self.btnGB1x1.setText("Gravando...")
-            #     self.btnGB2x1.setEnabled(True)
-            # except BaseException:
-            #     aviso = "ERROR: Falha no incio da gravação do NAO."
-            #     self.enviarAviso(aviso)
-            #     return    
+                return     
     def stopNaoRecording(self):
         if (self.BtnConn.text() == "Conectar"):
             return
         else:
-            # try:            
-            #     self.stopVideoRecording()
-            #     aviso = "AVISO: Fim da gravação do NAO."
-            #     self.enviarAviso(aviso)
-            # except BaseException:
-            #     aviso = "ERROR:Falha ao encerrar a gravação do NAO."
-            #     self.enviarAviso(aviso)
             try:
                 self.TMf.stop()
                 self.ledsOff()
                 self.btnGB1x1.setEnabled(True)
-                self.btnGB2x1.setEnabled(False)          
+                self.btnGB2x1.setEnabled(False)
+                aviso = "AVISO: Detector de face encerrado com sucesso."
+                self.enviarAviso(aviso)          
             except BaseException:
                 aviso = "ERROR:Falha ao encerrar detector de face."
                 self.enviarAviso(aviso)
