@@ -5,7 +5,7 @@ venv/
 *.wav
 *.txt
 Videos/
-movimentos/*.pyc
+movimentos/
 BdProteger.db
 Reservas/
 *.sqbpro
