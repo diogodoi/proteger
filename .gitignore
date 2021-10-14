@@ -1,9 +1,9 @@
 venv/
 .vscode
-*.pyc
-*.avi
-*.wav
-*.txt
+**.pyc
+**.avi
+**.wav
+**.txt
 Videos/
 movimentos/
 BdProteger.db
