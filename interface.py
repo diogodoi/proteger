@@ -199,10 +199,8 @@ class Ui_MainWindow(object):
         
         self.btn4x2 = QtGui.QPushButton(self.Movimentos)
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
-        self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)
-        
+        self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)  
 
-        
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
@@ -322,9 +320,7 @@ class Ui_MainWindow(object):
         self.BtnConn.clicked.connect(self.conexao)
         self.BtnNaoView.clicked.connect(self.newTreadVision)
         self.BtnEnc.clicked.connect(self.desconectar)
-        
-                
-        
+
         #Botões Movimentos
         self.btn1x1.clicked.connect(self.concordar)
         self.btn1x2.clicked.connect(self.discordar)
@@ -365,7 +361,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
     
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "GUIPsyin - Interface Gráfica de Interação Psicológica Infantil ", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "V1.1.0 - GUIPsyin - Interface Gráfica de Interação Psicológica Infantil ", None))
                         
         #menu
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
@@ -398,7 +394,6 @@ class Ui_MainWindow(object):
         self.btn3x1.setText(_translate("MainWindow", "Sentar", None))
         self.btn4x1.setText(_translate("MainWindow", "Oi/Tchau", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
-        # self.btn4x3.setText(_translate("MainWindow", "Focar", None))
         
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Hora", None))
@@ -683,12 +678,18 @@ class Ui_MainWindow(object):
                 self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
                 self.btnGB2x1.setEnabled(False)
                 aviso = "AVISO: Detector de face encerrado com sucesso."
-                self.enviarAviso(aviso)
-                return          
+                self.enviarAviso(aviso)         
             except BaseException:
                 aviso = "ERROR:Falha ao encerrar detector de face."
                 self.enviarAviso(aviso)
                 return
+            try:
+                self.salva_log()
+                return
+            except BaseException:
+                aviso = "ERROR:Falha ao salvar log."
+                self.enviarAviso(aviso)
+                return 
 
     #Funções Movimentos
     def levantar(self):
