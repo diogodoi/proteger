@@ -355,7 +355,6 @@ class Ui_MainWindow(object):
         self.inputIP.setCompleter(completerip)
  
         #Posições das box em grid
-        # self.gridMain.addWidget(self.menubar, 0, 1, 1, 2)
         self.gridMain.addWidget(self.Menu, 1, 1, 1, 1)
         self.gridMain.addWidget(self.groupBox,2,1,1,1)
         self.gridMain.addWidget(self.Movimentos, 1, 2, 2, 1)
@@ -372,10 +371,7 @@ class Ui_MainWindow(object):
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
         self.actionSobre.setText(_translate("MainWindow", "Sobre", None))
         self.Menu.setTitle(_translate("MainWindow", "Configurações", None))
-        # self.label_id.setText(_translate("MainWindow", "ID Criança", None))
         self.label_Ip.setText(_translate("MainWindow", "IP Robô", None))
-        # self.label_sessao.setText(_translate("MainWindow", "ID Sessão", None))
-        # self.label_dir.setText(_translate("MainWindow", "Diretório", None))
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
         self.BtnEnc.setText(_translate("MainWindow", "Desconectar", None))
         
@@ -410,8 +406,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Mensagens", None))
         self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))        
     
-    #Funções complementares
-    
+    #Funções complementares   
     
     def salva_ip(self):
         conn = sqlite3.connect('BdProteger.db')
@@ -424,15 +419,9 @@ class Ui_MainWindow(object):
     def conexao(self): 
         try:
             self.robotIP = self.setIP()
-            # self.proxyBattery = ALProxy("ALBattery",self.robotIP,self.PORT)
-            # self.bateria = self.proxyBattery.post.getBatteryCharge()
             self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
             self.posture = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
-            # self.bateria = str(self.bateria)
-            # self.BatThread = QThread()
-            # self.BatThread.started.connect(self.nivelBateria)
-            # self.BatThread.start()
-            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" foi estabelecida." # bateria "+ self.bateria +"%"+ " carregada."
+            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" foi estabelecida." 
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Falha na conexão com "+ self.robotIP +"."
@@ -440,7 +429,6 @@ class Ui_MainWindow(object):
             return
         try:
             self.basic_awareness = ALProxy("ALBasicAwareness", self.robotIP, self.PORT)
-            self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
         except BaseException:
             aviso = "ERROR: Falha na configuração da detecção de Face."
             self.enviarAviso(aviso)
@@ -452,18 +440,12 @@ class Ui_MainWindow(object):
             self.BtnEnc.setEnabled(True)
             self.BtnNaoView.setEnabled(True)
             self.BtnConn.setStyleSheet("background-color:#40FF00;") 
-            # self.inputIDC.setEnabled(True)
         except BaseException:
             aviso = "ERROR: Falha na configuração."
             self.enviarAviso(aviso)
             return
+
     def desconectar(self):
-        # try:            
-        #     self.BatThread.exit()
-        # except BaseException:
-        #     aviso = "ERROR:Falha ao encerrar thread nível de bateria."
-        #     self.enviarAviso(aviso)
-        #     return 
         try:
             global jan
             if jan != None:            
@@ -484,9 +466,7 @@ class Ui_MainWindow(object):
             self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
             self.BtnEnc.setEnabled(False)
-            # self.inputSessao.setEnabled(True)
             self.BtnNaoView.setEnabled(False)
-            # self.inputIDC.setEnabled(False)
             self.BtnConn.setStyleSheet("background:#FFF;border:None;")
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
@@ -581,6 +561,7 @@ class Ui_MainWindow(object):
             faceProxy.unsubscribe("Test_Face")
         except Exception:
             pass
+
     def face_fun(self):
         Face = self.faceDetector()
         self.aux = self.basic_awareness.isAwarenessRunning()
@@ -682,11 +663,14 @@ class Ui_MainWindow(object):
                 aviso = "AVISO: Detector de face inicializado com sucesso."
                 self.enviarAviso(aviso)
                 self.btnGB1x1.setEnabled(False)
+                self.btnGB1x1.setText("Conectado")
+                self.btnGB1x1.setStyleSheet("background-color:#40FF00;") 
                 self.btnGB2x1.setEnabled(True)
             except BaseException:
                 aviso = "ERROR: Falha na inicialização do detector de face."
                 self.enviarAviso(aviso)
                 return     
+
     def stopNaoRecording(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -695,6 +679,8 @@ class Ui_MainWindow(object):
                 self.TMf.stop()
                 self.ledsOff()
                 self.btnGB1x1.setEnabled(True)
+                self.btnGB1x1.setText("Iniciar Vida")
+                self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
                 self.btnGB2x1.setEnabled(False)
                 aviso = "AVISO: Detector de face encerrado com sucesso."
                 self.enviarAviso(aviso)
@@ -703,7 +689,6 @@ class Ui_MainWindow(object):
                 aviso = "ERROR:Falha ao encerrar detector de face."
                 self.enviarAviso(aviso)
                 return
-                         
 
     #Funções Movimentos
     def levantar(self):
@@ -727,7 +712,7 @@ class Ui_MainWindow(object):
             aviso = "ERROR:Falha na execução do comando sentar."
             self.enviarAviso(aviso)
     def funcSentarLevantar(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:                        
             if (self.btn3x1.text() == "Sentar"):                
@@ -763,72 +748,71 @@ class Ui_MainWindow(object):
             self.enviarAviso(str(aviso))
             return
     def concordar(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn1x1.setEnabled(False)
             self.movimento(concordar.sim)
             self.btn1x1.setEnabled(True)
     def discordar(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn1x2.setEnabled(False)
             self.movimento(discordar.nao)
             self.btn1x2.setEnabled(True)
     def nossa(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.movimento(nossa.nossa)
     def comemorar(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:        
             self.movimento(comemorar.comemorar)
     def empatia(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.movimento(empatia.empatia)
     def duvida(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.movimento(duvida.duvida)
     def palmas(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.movimento(palmas.palmas)
     def tocaqui(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.movimento(toca_aqui.tocaAqui)
     def tchau(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.movimento(tchau.tchau)
     def beijos(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.motion.wakeUp()
             self.movimento(beijos.beijos)
-    
-    #extras
-    
+
+    #extras    
     def virarDireita(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text()== "Iniciar Vida"):
             return
         else:
             self.motion.post.wakeUp()
             self.motion.post.moveInit()
             self.motion.post.moveTo(0,0,0.1)
     def virarEsquerda(self):
-        if (self.BtnConn.text() == "Conectar"):
+        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text()== "Iniciar Vida"):
             return
         else:
             self.motion.post.wakeUp()
