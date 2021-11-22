@@ -1,6 +1,6 @@
 venv/
 .vscode
-*.pyc
+movimentos/*.pyc
 **.avi
 **.wav
 **.txt
