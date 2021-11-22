@@ -67,19 +67,15 @@ for i,j in lastIp:
 conn.close()
 
 iprobo = ""
-nomeS = ""
-pastaS = ""
 jan = None
 
 class Ui_MainWindow(object):
     def __init__(self):
         self.val_ip = ""
         self.aux = False        
-        self.AuxLeds = False
-        self.pasta = ""
+        self.AuxLeds = False        
         self.robotIP = ""
         self.PORT = 9559
-        self.bateria = ""
         
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
@@ -416,16 +412,6 @@ class Ui_MainWindow(object):
     
     #Funções complementares
     
-    def gera_id_sessao(self):
-        pass
-        #     val = str(_fromUtf8(self.inputIDC.text()))
-        #     t = time.localtime()
-        #     id_da_sessao = time.strftime("%Y%m%d"+ "_" + val , t)        
-        #     self.inputSessao.setText(str(id_da_sessao))
-        #     self.inputSessao.setEnabled(False)
-        #     global nomeS
-        #     nomeS = id_da_sessao        
-        #     return id_da_sessao
     
     def salva_ip(self):
         conn = sqlite3.connect('BdProteger.db')
@@ -493,7 +479,7 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return 
         try:           
-            # self.desligar()
+            self.desligar()
             self.robotIP = ""
             self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
@@ -542,9 +528,8 @@ class Ui_MainWindow(object):
         cursor.execute(query)
         #Gera arquivo com o log dos arquivos
         listaLog = []
-        t = time.localtime()        
-        val = str(random.randint(0,100))
-        nome = "Log"+ str(time.strftime("%Y%m%d"+ "_" + val , t)) 
+        t = time.localtime()
+        nome = "Log"+ str(time.strftime("%Y%m%d"+ "_" + "%H-%M-%S" , t)) 
         arq = open("Logs/"+ nome +".txt",'w')
         for row, data in enumerate(cursor.fetchall()):              
             listaLog.append(data)
@@ -599,8 +584,8 @@ class Ui_MainWindow(object):
     def face_fun(self):
         Face = self.faceDetector()
         self.aux = self.basic_awareness.isAwarenessRunning()
-        # if (Face == True):
-        #     self.faceThread.exit()             
+        if (Face == True):
+            self.faceThread.exit()             
         if (self.aux == False):
             self.basic_awareness.startAwareness()
            
@@ -612,30 +597,6 @@ class Ui_MainWindow(object):
             self.olhaPraFrente()
             self.faceThread.exit()            
             return        
-      
-    def naoVideoRecording(self):        
-        filename = self.gera_id_sessao()
-        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
-        videoRecorderProxy.setResolution(2)
-        videoRecorderProxy.setFrameRate(24)
-        videoRecorderProxy.setVideoFormat("MJPG")
-        videoRecorderProxy.post.startRecording("/home/nao/recordings/cameras", str(filename)+"_NAO")
-    def stopVideoRecording(self):               
-        videoRecorderProxy = ALProxy("ALVideoRecorder", self.robotIP, self.PORT)
-        videoRecorderProxy.post.stopRecording()                
-       
-    def nivelBateria(self):
-        pass
-        # status = ""
-        # status = self.proxyBattery.post.getBatteryCharge()
-        # self.bateria = str(status)
-        # if status <= 30:
-        #     aviso = "AVISO: Nível baixo de bateria: "+ status+ " % "+ "restantes."
-        #     self.enviarAviso(str(aviso))
-            
-        # self.TMb = QTimer(self)
-        # self.TMb.timeout.connect(self.nivelBateria)
-        # self.TMb.start(180000)
     
     def newTreadVision(self):
         self.naovisionThread = QThread()
@@ -662,13 +623,6 @@ class Ui_MainWindow(object):
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
             self.enviarAviso(aviso)
-    def getDir(self):
-        folder = QFileDialog.getExistingDirectory(self,"Selecione um pasta para salvar o video.")            
-        if folder != None:
-            self.pasta = str(folder)
-            global pastaS
-            pastaS = self.pasta
-            self.inputDir.setText(self.pasta)
             
     def ledsOff(self):
         motion = ALProxy("ALMotion", self.robotIP, self.PORT)
@@ -676,13 +630,13 @@ class Ui_MainWindow(object):
         leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         name = "AllLeds"        
         leds.post.off(name)
+        
     def startLife(self):
         self.AuxLeds = True
         motion = ALProxy("ALMotion", self.robotIP, self.PORT)
         leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         names = ['BrainLeds','FaceLeds','ChestLeds','FeetLeds','EarLeds']
-        for name in names:
-            leds.post.on(name)
+        for name in names: leds.post.on(name)            
         motion = ALProxy("ALMotion", self.robotIP, self.PORT)
         motion.post.wakeUp()
         # motion.post.goToPosture("Stand",0.3)
@@ -743,7 +697,8 @@ class Ui_MainWindow(object):
                 self.btnGB1x1.setEnabled(True)
                 self.btnGB2x1.setEnabled(False)
                 aviso = "AVISO: Detector de face encerrado com sucesso."
-                self.enviarAviso(aviso)          
+                self.enviarAviso(aviso)
+                return          
             except BaseException:
                 aviso = "ERROR:Falha ao encerrar detector de face."
                 self.enviarAviso(aviso)
@@ -753,13 +708,14 @@ class Ui_MainWindow(object):
     #Funções Movimentos
     def levantar(self):
         try:            
-            motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-            motionProxy.post.wakeUp()
+            motion = ALProxy("ALMotion",self.robotIP,9559)
+            motion.post.wakeUp()
             aviso = "AVISO: Comando levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR:Falha na execução do comando levantar."
-            self.enviarAviso(aviso)           
+            self.enviarAviso(aviso)
+            return           
     def sentar(self):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)
@@ -969,7 +925,7 @@ class ImageWidget(QWidget):
     
 class VisionNAO(QObject):
     finished = pyqtSignal()
-    
+        
     def naoVision(self):
         try:
             self.IP = str(iprobo)            
