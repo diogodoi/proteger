@@ -456,7 +456,6 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return 
         try:           
-            self.desligar()
             self.robotIP = ""
             self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
