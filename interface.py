@@ -86,9 +86,7 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet("""
-                        font:16px;
-
-                        
+                        font:16px;                        
                           """)
 
         self.centralwidget = QtGui.QWidget(MainWindow)        
@@ -156,7 +154,7 @@ class Ui_MainWindow(object):
         
         self.gridLayout_2 = QtGui.QGridLayout(self.Movimentos)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-       
+        
         self.btn1x1 = QtGui.QPushButton(self.Movimentos)
         self.btn1x1.setObjectName(_fromUtf8("btn1x1"))
         self.gridLayout_2.addWidget(self.btn1x1, 0, 3, 1, 1)
@@ -199,7 +197,19 @@ class Ui_MainWindow(object):
         
         self.btn4x2 = QtGui.QPushButton(self.Movimentos)
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
-        self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)  
+        self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)
+        
+        self.btn1x1.setEnabled(False)
+        self.btn2x1.setEnabled(False)
+        self.btn3x1.setEnabled(False)
+        self.btn1x2.setEnabled(False)
+        self.btn2x2.setEnabled(False)
+        self.btn3x2.setEnabled(False)
+        self.btn1x3.setEnabled(False)
+        self.btn2x3.setEnabled(False)
+        self.btn3x3.setEnabled(False)
+        self.btn4x1.setEnabled(False)
+        self.btn4x2.setEnabled(False)  
 
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
@@ -276,15 +286,14 @@ class Ui_MainWindow(object):
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
     
         self.gridLayout_GB = QtGui.QGridLayout(self.groupBox)
-        self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))
-        
+        self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))        
         
         self.groupBox.setMinimumSize(200,200)
-        self.groupBox.setMaximumSize(500,500)
-        
+        self.groupBox.setMaximumSize(500,500)        
         
         self.btnGB1x1 = QtGui.QPushButton(self.groupBox)
         self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))
+        self.btnGB1x1.setEnabled(False)
         
         self.gridLayout_GB.addWidget(self.btnGB1x1, 1, 1, 1, 2)
         
@@ -434,6 +443,7 @@ class Ui_MainWindow(object):
             self.BtnConn.setEnabled(False)
             self.BtnEnc.setEnabled(True)
             self.BtnNaoView.setEnabled(True)
+            self.btnGB1x1.setEnabled(True)
             self.BtnConn.setStyleSheet("background-color:#40FF00;") 
         except BaseException:
             aviso = "ERROR: Falha na configuração."
@@ -462,6 +472,20 @@ class Ui_MainWindow(object):
             self.BtnEnc.setEnabled(False)
             self.BtnNaoView.setEnabled(False)
             self.BtnConn.setStyleSheet("background:#FFF;border:None;")
+            self.btn1x1.setEnabled(False)
+            self.btn2x1.setEnabled(False)
+            self.btn3x1.setEnabled(False)
+
+            self.btn1x2.setEnabled(False)
+            self.btn2x2.setEnabled(False)
+            self.btn3x2.setEnabled(False)
+
+            self.btn1x3.setEnabled(False)
+            self.btn2x3.setEnabled(False)
+            self.btn3x3.setEnabled(False)
+
+            self.btn4x1.setEnabled(False)
+            self.btn4x2.setEnabled(False)
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
@@ -616,6 +640,17 @@ class Ui_MainWindow(object):
         motion.post.wakeUp()
         # motion.post.goToPosture("Stand",0.3)
         motion.post.setBreathEnabled("Body",True)
+        self.btn1x1.setEnabled(True)
+        self.btn2x1.setEnabled(True)
+        self.btn3x1.setEnabled(True)
+        self.btn1x2.setEnabled(True)
+        self.btn2x2.setEnabled(True)
+        self.btn3x2.setEnabled(True)
+        self.btn1x3.setEnabled(True)
+        self.btn2x3.setEnabled(True)
+        self.btn3x3.setEnabled(True)
+        self.btn4x1.setEnabled(True)
+        self.btn4x2.setEnabled(True)
     
     def olhaPraFrente(self):
 
@@ -684,7 +719,17 @@ class Ui_MainWindow(object):
                 return
             try:
                 self.salva_log()
-                return
+                self.btn1x1.setEnabled(False)
+                self.btn2x1.setEnabled(False)
+                self.btn3x1.setEnabled(False)
+                self.btn1x2.setEnabled(False)
+                self.btn2x2.setEnabled(False)
+                self.btn3x2.setEnabled(False)
+                self.btn1x3.setEnabled(False)
+                self.btn2x3.setEnabled(False)
+                self.btn3x3.setEnabled(False)
+                self.btn4x1.setEnabled(False)
+                self.btn4x2.setEnabled(False)
             except BaseException:
                 aviso = "ERROR:Falha ao salvar log."
                 self.enviarAviso(aviso)
@@ -738,9 +783,9 @@ class Ui_MainWindow(object):
             self.motion.post.angleInterpolation(names, keys, times, True)                        
             # self.posture.post.goToPosture("Stand",0.25)
             self.motion.post.setBreathEnabled("Body",True)
-            aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
+            aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
             self.enviarAviso(str(aviso))
         except BaseException:
             aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
@@ -764,43 +809,59 @@ class Ui_MainWindow(object):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn1x3.setEnabled(False)
             self.movimento(nossa.nossa)
+            self.btn1x3.setEnabled(True)
     def comemorar(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
-        else:        
+        else:
+            self.btn2x1.setEnabled(False)        
             self.movimento(comemorar.comemorar)
+            self.btn2x1.setEnabled(True)
     def empatia(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn2x2.setEnabled(False)
             self.movimento(empatia.empatia)
+            self.btn2x2.setEnabled(True)
     def duvida(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn2x3.setEnabled(False)
             self.movimento(duvida.duvida)
+            self.btn2x3.setEnabled(False)
     def palmas(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn3x2.setEnabled(False)
             self.movimento(palmas.palmas)
+            self.btn3x2.setEnabled(True)
     def tocaqui(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn3x3.setEnabled(False)
             self.movimento(toca_aqui.tocaAqui)
+            self.btn3x3.setEnabled(True)
     def tchau(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn4x1.setEnabled(False)
             self.movimento(tchau.tchau)
+            self.btn4x1.setEnabled(True)
     def beijos(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
+            self.btn4x2.setEnabled(False)
             self.motion.wakeUp()
             self.movimento(beijos.beijos)
+            self.btn4x2.setEnabled(True)
 
     #extras    
     def virarDireita(self):
