@@ -695,20 +695,18 @@ class Ui_MainWindow(object):
         try:            
             motion = ALProxy("ALMotion",self.robotIP,9559)
             motion.post.wakeUp()
-	    motion.post.setBreathEnabled("Body",True)
+            motion.post.setBreathEnabled("Body",True)
             aviso = "AVISO: Comando levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR:Falha na execução do comando levantar."
-            self.enviarAviso(aviso)
-            return           
+            self.enviarAviso(aviso)          
     def sentar(self):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)
             motionProxy.post.rest()
             aviso = "AVISO: Comando sentar enviado com sucesso."
-            self.enviarAviso(aviso) 
-            
+            self.enviarAviso(aviso)             
         except BaseException:
             aviso = "ERROR:Falha na execução do comando sentar."
             self.enviarAviso(aviso)
