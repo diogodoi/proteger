@@ -4,6 +4,22 @@ def sim():
       keys = list()
 
       names.append("HeadPitch")
+      times.append([0.4, 0.92, 1.24, 1.66, 2.10, 2.70, 3.40, 4.24])
+      keys.append([-0.013848, 0.415673, -0.268493, 0.415673, -0.268493, 0.415673, -0.268493, 0.1733])
+
+      names.append("HeadYaw")
+      times.append([0.4, 0.92, 1.24, 1.66, 2.10, 2.70, 3.40, 4.24])
+      keys.append([-4.19617e-05, 0.010696, 0.00456004, 0.010696, 0.00456004, 0.010696, 0.00456004, -4.19617e-05])
+
+      return names, times, keys
+
+"""
+      #codigo original
+      names = list()
+      times = list()
+      keys = list()
+
+      names.append("HeadPitch")
       times.append([0.64, 0.88, 1.08, 1.32, 1.56, 1.84, 2.12, 2.72])
       keys.append([-0.013848, 0.415673, -0.268493, 0.415673, -0.268493, 0.415673, -0.268493, 0.1733])
 
@@ -102,5 +118,4 @@ def sim():
       names.append("RWristYaw")
       times.append([0.96, 2.16])
       keys.append([0.722472, -0.00157596])
-
-      return names,times,keys
+"""
