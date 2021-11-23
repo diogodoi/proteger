@@ -1,11 +1,10 @@
 venv/
 .vscode
-movimentos/*.pyc
+*.pyc
 **.avi
 **.wav
 **.txt
 Videos/
-movimentos/
 BdProteger.db
 Reservas/
 *.sqbpro
