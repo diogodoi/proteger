@@ -696,6 +696,7 @@ class Ui_MainWindow(object):
         try:            
             motion = ALProxy("ALMotion",self.robotIP,9559)
             motion.post.wakeUp()
+	    motion.post.setBreathEnabled("Body",True)
             aviso = "AVISO: Comando levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
