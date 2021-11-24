@@ -741,6 +741,17 @@ class Ui_MainWindow(object):
             motion = ALProxy("ALMotion",self.robotIP,9559)
             motion.post.wakeUp()
             motion.post.setBreathEnabled("Body",True)
+            self.btn1x1.setEnabled(True)
+            self.btn1x2.setEnabled(True)
+            self.btn1x3.setEnabled(True)
+            self.btn2x1.setEnabled(True)
+            self.btn2x2.setEnabled(True)
+            self.btn2x3.setEnabled(True)
+            self.btn3x2.setEnabled(True)
+            self.btn3x3.setEnabled(True)
+            self.btn4x1.setEnabled(True)
+            self.btn4x2.setEnabled(True)
+
             aviso = "AVISO: Comando levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
@@ -750,6 +761,16 @@ class Ui_MainWindow(object):
         try:            
             motionProxy = ALProxy("ALMotion",self.robotIP,9559)
             motionProxy.post.rest()
+            self.btn1x1.setEnabled(False)
+            self.btn1x2.setEnabled(False)
+            self.btn1x3.setEnabled(False)
+            self.btn2x1.setEnabled(False)
+            self.btn2x2.setEnabled(False)
+            self.btn2x3.setEnabled(False)
+            self.btn3x2.setEnabled(False)
+            self.btn3x3.setEnabled(False)
+            self.btn4x1.setEnabled(False)
+            self.btn4x2.setEnabled(False)
             aviso = "AVISO: Comando sentar enviado com sucesso."
             self.enviarAviso(aviso)             
         except BaseException:
@@ -779,9 +800,8 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return
         try:
-            self.motion.post.wakeUp() 
-            self.motion.post.angleInterpolation(names, keys, times, True)                        
-            # self.posture.post.goToPosture("Stand",0.25)
+            self.motion.post.wakeUp()
+            self.motion.post.angleInterpolation(names, keys, times, True)
             self.motion.post.setBreathEnabled("Body",True)
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
@@ -791,6 +811,7 @@ class Ui_MainWindow(object):
             aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
             self.enviarAviso(str(aviso))
             return
+
     def concordar(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
