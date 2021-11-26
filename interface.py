@@ -751,6 +751,8 @@ class Ui_MainWindow(object):
             self.btn3x3.setEnabled(True)
             self.btn4x1.setEnabled(True)
             self.btn4x2.setEnabled(True)
+            self.btnGB3x1.setEnabled(True)
+            self.btnGB4x1.setEnabled(True)
 
             aviso = "AVISO: Comando levantar enviado com sucesso."
             self.enviarAviso(aviso)
@@ -771,6 +773,8 @@ class Ui_MainWindow(object):
             self.btn3x3.setEnabled(False)
             self.btn4x1.setEnabled(False)
             self.btn4x2.setEnabled(False)
+            self.btnGB3x1.setEnabled(False)
+            self.btnGB4x1.setEnabled(False)
             aviso = "AVISO: Comando sentar enviado com sucesso."
             self.enviarAviso(aviso)             
         except BaseException:
