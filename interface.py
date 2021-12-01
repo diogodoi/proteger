@@ -482,20 +482,19 @@ class Ui_MainWindow(object):
             self.BtnEnc.setEnabled(False)
             self.BtnNaoView.setEnabled(False)
             self.BtnConn.setStyleSheet("background:#FFF;border:None;")
-            self.btn1x1.setEnabled(False)
+            
             self.btn2x1.setEnabled(False)
             self.btn3x1.setEnabled(False)
-
             self.btn1x2.setEnabled(False)
             self.btn2x2.setEnabled(False)
             self.btn3x2.setEnabled(False)
-
             self.btn1x3.setEnabled(False)
             self.btn2x3.setEnabled(False)
             self.btn3x3.setEnabled(False)
-
             self.btn4x1.setEnabled(False)
             self.btn4x2.setEnabled(False)
+            self.btnGB3x1.setEnabled(False)
+            self.btnGB4x1.setEnabled(False)
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
@@ -629,6 +628,19 @@ class Ui_MainWindow(object):
                 system.post.shutdown()
                 aviso = "AVISO: Fim da conexão com o robô."
                 self.enviarAviso(aviso)
+                self.btn1x1.setEnabled(False)
+                self.btn2x1.setEnabled(False)
+                self.btn3x1.setEnabled(False)
+                self.btn1x2.setEnabled(False)
+                self.btn2x2.setEnabled(False)
+                self.btn3x2.setEnabled(False)
+                self.btn1x3.setEnabled(False)
+                self.btn2x3.setEnabled(False)
+                self.btn3x3.setEnabled(False)
+                self.btn4x1.setEnabled(False)
+                self.btn4x2.setEnabled(False)
+                self.btnGB3x1.setEnabled(False)
+                self.btnGB4x1.setEnabled(False)
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
             self.enviarAviso(aviso)
@@ -675,7 +687,8 @@ class Ui_MainWindow(object):
         self.btn4x1.setEnabled(True)
         self.btn4x2.setEnabled(True)
         self.btnGB3x1.setEnabled(True)
-        self.btnGB4x1.setEnabled(True)    
+        self.btnGB4x1.setEnabled(True)
+            
     def olhaPraFrente(self):
 
         names = list()
@@ -1017,9 +1030,4 @@ class VisionNAO(QObject):
             jan = ImageWidget(self.IP, self.PORT, self.CameraID)
             jan.show()
         except Exception:
-            aviso = "ERROR: Falha na conexão com a câmera do NAO."
-            print(aviso)
             return
-        
-class Sobre():
-    pass
