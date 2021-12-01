@@ -4,6 +4,7 @@ from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainte
 from PyQt4.QtCore import QTimer, QBasicTimer, QObject, Qt,QThread, pyqtSignal
 from naoqi import ALProxy, ALBroker, ALModule
 from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
+from designSobre import Ui_Sobre
 import vision_definitions
 import sqlite3
 import time
@@ -108,6 +109,9 @@ class Ui_MainWindow(object):
         self.menuMenu.addAction(self.actionSobre)
         self.menubar.addAction(self.menuMenu.menuAction())
         
+        self.actionSobre.triggered.connect(self.openSobre)
+        
+        
 
         #Configurações
         self.Menu = QtGui.QGroupBox(self.centralwidget)        
@@ -209,8 +213,7 @@ class Ui_MainWindow(object):
         self.btn2x3.setEnabled(False)
         self.btn3x3.setEnabled(False)
         self.btn4x1.setEnabled(False)
-        self.btn4x2.setEnabled(False)  
-
+        self.btn4x2.setEnabled(False)
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
@@ -311,7 +314,8 @@ class Ui_MainWindow(object):
         self.btnGB4x1.setObjectName(_fromUtf8("btnGB2x1"))
         
         self.gridLayout_GB.addWidget(self.btnGB4x1, 3, 2, 1, 1)
-       
+        self.btnGB3x1.setEnabled(False)
+        self.btnGB4x1.setEnabled(False)       
                 
         ### BOTAO EMERGENCIA
         self.EMG = QtGui.QPushButton(self.centralwidget)
@@ -370,7 +374,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
     
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "V1.1.0 - GUIPsyin - Interface Gráfica de Interação Psicológica Infantil ", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "V1.0.5 - GUIPsyin: Interface Gráfica de Interação Psicológica Infantil ", None))
                         
         #menu
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
@@ -410,6 +414,12 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Mensagens", None))
         self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))        
     
+    def openSobre(self):
+        self.windowSobre = QtGui.QWidget()
+        ui = Ui_Sobre()
+        ui.setupUi(self.windowSobre)
+        self.windowSobre.show()
+        
     #Funções complementares   
     
     def salva_ip(self):
@@ -629,6 +639,19 @@ class Ui_MainWindow(object):
         leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         name = "AllLeds"        
         leds.post.off(name)
+        self.btn1x1.setEnabled(False)
+        self.btn2x1.setEnabled(False)
+        self.btn3x1.setEnabled(False)
+        self.btn1x2.setEnabled(False)
+        self.btn2x2.setEnabled(False)
+        self.btn3x2.setEnabled(False)
+        self.btn1x3.setEnabled(False)
+        self.btn2x3.setEnabled(False)
+        self.btn3x3.setEnabled(False)
+        self.btn4x1.setEnabled(False)
+        self.btn4x2.setEnabled(False)
+        self.btnGB3x1.setEnabled(False)
+        self.btnGB4x1.setEnabled(False)
         
     def startLife(self):
         self.AuxLeds = True
@@ -651,7 +674,8 @@ class Ui_MainWindow(object):
         self.btn3x3.setEnabled(True)
         self.btn4x1.setEnabled(True)
         self.btn4x2.setEnabled(True)
-    
+        self.btnGB3x1.setEnabled(True)
+        self.btnGB4x1.setEnabled(True)    
     def olhaPraFrente(self):
 
         names = list()
@@ -718,18 +742,7 @@ class Ui_MainWindow(object):
                 self.enviarAviso(aviso)
                 return
             try:
-                self.salva_log()
-                self.btn1x1.setEnabled(False)
-                self.btn2x1.setEnabled(False)
-                self.btn3x1.setEnabled(False)
-                self.btn1x2.setEnabled(False)
-                self.btn2x2.setEnabled(False)
-                self.btn3x2.setEnabled(False)
-                self.btn1x3.setEnabled(False)
-                self.btn2x3.setEnabled(False)
-                self.btn3x3.setEnabled(False)
-                self.btn4x1.setEnabled(False)
-                self.btn4x2.setEnabled(False)
+                self.salva_log()                
             except BaseException:
                 aviso = "ERROR:Falha ao salvar log."
                 self.enviarAviso(aviso)
@@ -1008,3 +1021,5 @@ class VisionNAO(QObject):
             print(aviso)
             return
         
+class Sobre():
+    pass
