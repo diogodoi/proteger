@@ -621,7 +621,7 @@ class Ui_MainWindow(object):
         try:
             if (self.BtnConn.text() == "Conectar"):
                 return
-            else:            
+            else:          
                 motionProxy = ALProxy("ALMotion",self.robotIP,9559)
                 system = ALProxy("ALSystem", self.robotIP, 9559)            
                 motionProxy.post.rest()      
@@ -641,6 +641,10 @@ class Ui_MainWindow(object):
                 self.btn4x2.setEnabled(False)
                 self.btnGB3x1.setEnabled(False)
                 self.btnGB4x1.setEnabled(False)
+                self.btnGB1x1.setEnabled(False)
+                self.btnGB2x1.setEnabled(False)
+                self.btnGB1x1.setText("Iniciar Vida")
+                self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
             self.enviarAviso(aviso)
@@ -1031,3 +1035,18 @@ class VisionNAO(QObject):
             jan.show()
         except Exception:
             return
+
+import sys
+
+class interface(QtGui.QMainWindow,Ui_MainWindow):
+    def __init__(self):
+        QtGui.QMainWindow.__init__(self)
+        Ui_MainWindow.__init__(self)
+        self.setupUi(self)
+        
+
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    window = interface()
+    window.show()
+    sys.exit(app.exec_())
