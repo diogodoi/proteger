@@ -482,7 +482,7 @@ class Ui_MainWindow(object):
             self.BtnEnc.setEnabled(False)
             self.BtnNaoView.setEnabled(False)
             self.BtnConn.setStyleSheet("background:#FFF;border:None;")
-            
+            #Movimentos
             self.btn2x1.setEnabled(False)
             self.btn3x1.setEnabled(False)
             self.btn1x2.setEnabled(False)
@@ -493,8 +493,14 @@ class Ui_MainWindow(object):
             self.btn3x3.setEnabled(False)
             self.btn4x1.setEnabled(False)
             self.btn4x2.setEnabled(False)
+            #sessão
             self.btnGB3x1.setEnabled(False)
             self.btnGB4x1.setEnabled(False)
+            self.btnGB1x1.setEnabled(False)
+            self.btnGB2x1.setEnabled(False)
+            self.btnGB1x1.setText("Iniciar Vida")
+            self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+            
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
