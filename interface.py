@@ -214,6 +214,7 @@ class Ui_MainWindow(object):
         self.btn3x3.setEnabled(False)
         self.btn4x1.setEnabled(False)
         self.btn4x2.setEnabled(False)
+        
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
@@ -374,7 +375,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
     
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "V1.0.5 - GUIPsyin: Interface Gráfica de Interação Psicológica Infantil ", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "V1.0.6 - GUIPsyin: Interface Gráfica de Interação Psicológica Infantil ", None))
                         
         #menu
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
@@ -477,12 +478,14 @@ class Ui_MainWindow(object):
             return 
         try:           
             self.robotIP = ""
-            self.BtnConn.setText("Conectar")
             self.BtnConn.setEnabled(True)
+            self.BtnConn.setText("Conectar")
+            self.BtnConn.setStyleSheet("background:#FFF;border:None;")
             self.BtnEnc.setEnabled(False)
             self.BtnNaoView.setEnabled(False)
-            self.BtnConn.setStyleSheet("background:#FFF;border:None;")
+            
             #Movimentos
+            self.btn1x1.setEnabled(False)
             self.btn2x1.setEnabled(False)
             self.btn3x1.setEnabled(False)
             self.btn1x2.setEnabled(False)
@@ -493,13 +496,14 @@ class Ui_MainWindow(object):
             self.btn3x3.setEnabled(False)
             self.btn4x1.setEnabled(False)
             self.btn4x2.setEnabled(False)
-            #sessão
-            self.btnGB3x1.setEnabled(False)
-            self.btnGB4x1.setEnabled(False)
-            self.btnGB1x1.setEnabled(False)
-            self.btnGB2x1.setEnabled(False)
+            
+            #sessão            
             self.btnGB1x1.setText("Iniciar Vida")
             self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+            self.btnGB1x1.setEnabled(False)
+            self.btnGB2x1.setEnabled(False)
+            self.btnGB3x1.setEnabled(False)
+            self.btnGB4x1.setEnabled(False)
             
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
@@ -587,7 +591,7 @@ class Ui_MainWindow(object):
                                 return True
 
                 except Exception:
-                        aviso = "faces detected, but it seems getData is invalid."
+                        aviso = "Face detectada, mas parece que getData é inválido."
                         self.enviarAviso(aviso)
             else:
                 return False
@@ -627,13 +631,21 @@ class Ui_MainWindow(object):
         try:
             if (self.BtnConn.text() == "Conectar"):
                 return
-            else:          
-                motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-                system = ALProxy("ALSystem", self.robotIP, 9559)            
-                motionProxy.post.rest()      
+            else:
+                try:          
+                    motionProxy = ALProxy("ALMotion",self.robotIP,9559)
+                    system = ALProxy("ALSystem", self.robotIP, 9559)            
+                    motionProxy.post.rest()
+                except:
+                    pass
+                
                 system.post.shutdown()
                 aviso = "AVISO: Fim da conexão com o robô."
                 self.enviarAviso(aviso)
+                self.BtnConn.setText("Conectar")
+                self.BtnConn.setStyleSheet("background:#FFF;border:None;")
+                self.BtnConn.setEnabled(True)
+                
                 self.btn1x1.setEnabled(False)
                 self.btn2x1.setEnabled(False)
                 self.btn3x1.setEnabled(False)
@@ -644,13 +656,15 @@ class Ui_MainWindow(object):
                 self.btn2x3.setEnabled(False)
                 self.btn3x3.setEnabled(False)
                 self.btn4x1.setEnabled(False)
-                self.btn4x2.setEnabled(False)
-                self.btnGB3x1.setEnabled(False)
-                self.btnGB4x1.setEnabled(False)
-                self.btnGB1x1.setEnabled(False)
-                self.btnGB2x1.setEnabled(False)
+                self.btn4x2.setEnabled(False)                
+
                 self.btnGB1x1.setText("Iniciar Vida")
                 self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+                self.btnGB1x1.setEnabled(False)                
+                self.btnGB3x1.setEnabled(False)
+                self.btnGB4x1.setEnabled(False)
+                self.btnGB2x1.setEnabled(False)
+                
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
             self.enviarAviso(aviso)
@@ -674,6 +688,8 @@ class Ui_MainWindow(object):
         self.btn4x2.setEnabled(False)
         self.btnGB3x1.setEnabled(False)
         self.btnGB4x1.setEnabled(False)
+        self.btnGB1x1.setText("Iniciar Vida")
+        self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
         
     def startLife(self):
         self.AuxLeds = True
