@@ -439,6 +439,35 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return
 
+    def buttonsOff(self):
+        self.BtnConn.setEnabled(True)
+        self.BtnConn.setText("Conectar")
+        self.BtnConn.setStyleSheet("background:#e1e1e1;")
+        self.BtnEnc.setEnabled(False)
+        self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
+        self.BtnNaoView.setEnabled(False)
+        
+        #Movimentos
+        self.btn1x1.setEnabled(False)
+        self.btn2x1.setEnabled(False)
+        self.btn3x1.setEnabled(False)
+        self.btn1x2.setEnabled(False)
+        self.btn2x2.setEnabled(False)
+        self.btn3x2.setEnabled(False)
+        self.btn1x3.setEnabled(False)
+        self.btn2x3.setEnabled(False)
+        self.btn3x3.setEnabled(False)
+        self.btn4x1.setEnabled(False)
+        self.btn4x2.setEnabled(False)
+        
+        #sessão            
+        self.btnGB1x1.setText("Iniciar Vida")
+        self.btnGB1x1.setStyleSheet("background:#e1e1e1;")
+        self.btnGB1x1.setEnabled(False)
+        self.btnGB2x1.setEnabled(False)
+        self.btnGB3x1.setEnabled(False)
+        self.btnGB4x1.setEnabled(False)
+        return
     def desconectar(self):
         try:
             self.TMf.stop()
@@ -452,33 +481,7 @@ class Ui_MainWindow(object):
             return 
         try:           
             self.robotIP = ""
-            self.BtnConn.setEnabled(True)
-            self.BtnConn.setText("Conectar")
-            self.BtnConn.setStyleSheet("background:#e1e1e1;")
-            self.BtnEnc.setEnabled(False)
-            self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
-            self.BtnNaoView.setEnabled(False)
-            
-            #Movimentos
-            self.btn1x1.setEnabled(False)
-            self.btn2x1.setEnabled(False)
-            self.btn3x1.setEnabled(False)
-            self.btn1x2.setEnabled(False)
-            self.btn2x2.setEnabled(False)
-            self.btn3x2.setEnabled(False)
-            self.btn1x3.setEnabled(False)
-            self.btn2x3.setEnabled(False)
-            self.btn3x3.setEnabled(False)
-            self.btn4x1.setEnabled(False)
-            self.btn4x2.setEnabled(False)
-            
-            #sessão            
-            self.btnGB1x1.setText("Iniciar Vida")
-            self.btnGB1x1.setStyleSheet("background:#e1e1e1;")
-            self.btnGB1x1.setEnabled(False)
-            self.btnGB2x1.setEnabled(False)
-            self.btnGB3x1.setEnabled(False)
-            self.btnGB4x1.setEnabled(False)
+            self.buttonsOff()
             
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
@@ -612,30 +615,7 @@ class Ui_MainWindow(object):
                 system.post.shutdown()
                 aviso = "AVISO: Fim da conexão com o robô."
                 self.enviarAviso(aviso)
-                self.BtnConn.setText("Conectar")
-                self.BtnConn.setStyleSheet("background:#e1e1e1;border:None;")
-                self.BtnConn.setEnabled(True)
-                
-                self.BtnNaoView.setEnabled(False)
-                
-                self.btn1x1.setEnabled(False)
-                self.btn2x1.setEnabled(False)
-                self.btn3x1.setEnabled(False)
-                self.btn1x2.setEnabled(False)
-                self.btn2x2.setEnabled(False)
-                self.btn3x2.setEnabled(False)
-                self.btn1x3.setEnabled(False)
-                self.btn2x3.setEnabled(False)
-                self.btn3x3.setEnabled(False)
-                self.btn4x1.setEnabled(False)
-                self.btn4x2.setEnabled(False)                
-
-                self.btnGB1x1.setText("Iniciar Vida")
-                self.btnGB1x1.setStyleSheet("background:#e1e1e1;border:None;")
-                self.btnGB1x1.setEnabled(False)                
-                self.btnGB3x1.setEnabled(False)
-                self.btnGB4x1.setEnabled(False)
-                self.btnGB2x1.setEnabled(False)
+                self.buttonsOff()
                 
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
