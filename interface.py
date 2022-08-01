@@ -9,8 +9,12 @@ import vision_definitions
 import sqlite3
 import time
 import random
-import os
-
+from PIL import Image
+import numpy as np
+import cv2
+from tensorflow.python.keras.models import load_model
+# Para salvar o modelo no formato json
+from tensorflow.python.keras.models import model_from_json
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -26,33 +30,7 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
-#Verifica se o banco de dados existe, se não existir ele é criado.
-try:
-    bd = open('BdProteger.db')
-    bd.close()
-except:
-    conn = sqlite3.connect('BdProteger.db')
-    conn.execute(''' CREATE TABLE "IpRobot" (
-	"id"	INTEGER,
-	"IpRobot"	TEXT UNIQUE,
-	PRIMARY KEY("id"))
-                 ''')
-    conn.execute(''' 
-    CREATE TABLE "Sessao" (
-	"ip"	INTEGER UNIQUE,
-	"Data"	TEXT NOT NULL,
-	"Hora"	TEXT NOT NULL,
-	"Aviso"	TEXT NOT NULL,
-	PRIMARY KEY("ip" AUTOINCREMENT))    
-''')
-    conn.execute("INSERT INTO IpRobot (IpRobot) VALUES ('192.168.0.1')");
-    conn.commit()
-    conn.close()
-    
-try:
-    os.mkdir("Logs")
-except:
-    pass
+
 #Abre Banco de dados e adiciona os valores no completer, e pega o ultimo valor de IP inserido.
 conn = sqlite3.connect('BdProteger.db')
 cursor = conn.cursor()
@@ -276,14 +254,14 @@ class Ui_MainWindow(object):
         self.logo_lar.setObjectName(_fromUtf8("logo_lar"))
         self.gridAvisos.addWidget(self.logo_lar, 3, 4, 1, 1)
         
-        self.logo_Unesp = QtGui.QLabel(self.Avisos)
-        # self.logo_Unesp.resize(100,60)
-        self.logo_Unesp.setMaximumSize(100,60)              
-        self.logo_Unesp.setText(_fromUtf8(""))
-        self.logo_Unesp.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/unesp-full-center.png")))
-        self.logo_Unesp.setScaledContents(True)
-        self.logo_Unesp.setObjectName(_fromUtf8("logo_Unesp"))
-        self.gridAvisos.addWidget(self.logo_Unesp, 3, 5, 1, 1)
+        # self.logo_Unesp = QtGui.QLabel(self.Avisos)
+        # # self.logo_Unesp.resize(100,60)
+        # self.logo_Unesp.setMaximumSize(100,60)              
+        # self.logo_Unesp.setText(_fromUtf8(""))
+        # self.logo_Unesp.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/unesp-full-center.png")))
+        # self.logo_Unesp.setScaledContents(True)
+        # self.logo_Unesp.setObjectName(_fromUtf8("logo_Unesp"))
+        # self.gridAvisos.addWidget(self.logo_Unesp, 3, 5, 1, 1)
         
        #Gravação
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
@@ -332,7 +310,7 @@ class Ui_MainWindow(object):
         
         #Botões Configurações
         self.BtnConn.clicked.connect(self.conexao)
-        self.BtnNaoView.clicked.connect(self.newTreadVision)
+        self.BtnNaoView.clicked.connect(self.detector_de_emocao)
         self.BtnEnc.clicked.connect(self.desconectar)
 
         #Botões Movimentos
@@ -375,7 +353,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
     
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "V1.0.6 - GUIPsyin: Interface Gráfica de Interação Psicológica Infantil ", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "V1.0.7 - GUIPsyin: Interface Gráfica de Interação Psicológica Infantil ", None))
                         
         #menu
         self.menuMenu.setTitle(_translate("MainWindow", "Menu", None))        
@@ -436,7 +414,7 @@ class Ui_MainWindow(object):
             self.robotIP = self.setIP()
             self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
             self.posture = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
-            aviso = "AVISO: Conexão estabelecida com "+self.robotIP+" foi estabelecida." 
+            aviso = "AVISO: Conexão com "+self.robotIP+" estabelecida." 
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR: Falha na conexão com "+ self.robotIP +"."
@@ -463,13 +441,9 @@ class Ui_MainWindow(object):
 
     def desconectar(self):
         try:
-            global jan
-            if jan != None:            
-                jan.destroy()
-                jan = None
-        except BaseException:
-            aviso = "ERROR:Falha ao fechar janelas."
-            self.enviarAviso(aviso)        
+            self.TMf.stop()
+        except:
+            pass
         try:
             self.salva_log()
         except BaseException:
@@ -480,8 +454,9 @@ class Ui_MainWindow(object):
             self.robotIP = ""
             self.BtnConn.setEnabled(True)
             self.BtnConn.setText("Conectar")
-            self.BtnConn.setStyleSheet("background:#FFF;border:None;")
+            self.BtnConn.setStyleSheet("background:#e1e1e1;")
             self.BtnEnc.setEnabled(False)
+            self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
             self.BtnNaoView.setEnabled(False)
             
             #Movimentos
@@ -499,7 +474,7 @@ class Ui_MainWindow(object):
             
             #sessão            
             self.btnGB1x1.setText("Iniciar Vida")
-            self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+            self.btnGB1x1.setStyleSheet("background:#e1e1e1;")
             self.btnGB1x1.setEnabled(False)
             self.btnGB2x1.setEnabled(False)
             self.btnGB3x1.setEnabled(False)
@@ -531,6 +506,7 @@ class Ui_MainWindow(object):
                 self.tableWidget.setItem(row,col, QTableWidgetItem(_fromUtf8(data) ))
         self.tableWidget.show()
         conn.close()
+        return
     
     def setIP(self):
             self.val_ip = str(self.inputIP.text())
@@ -569,6 +545,7 @@ class Ui_MainWindow(object):
         except Exception:
             aviso = "ERROR:Não Foi possível criar o proxy de detecção de face."
             self.enviarAviso(aviso)
+            return
         try:    
             if(val and isinstance(val, list) and len(val) >= 2): 
                         
@@ -616,15 +593,6 @@ class Ui_MainWindow(object):
             self.faceThread.exit()            
             return        
     
-    def newTreadVision(self):
-        self.naovisionThread = QThread()
-        self.worker1 = VisionNAO()
-        # self.worker1.moveToThread(self.naovisionThread)
-        self.naovisionThread.started.connect(self.worker1.naoVision)
-        # self.worker1.finished.connect(self.naovisionThread.quit)
-        # self.worker1.finished.connect(self.worker1.deleteLater)
-        # self.naovisionThread.finished.connect(self.naovisionThread.deleteLater)        
-        self.naovisionThread.start()
         
     #Funções dos botões
     def desligar(self):
@@ -632,9 +600,11 @@ class Ui_MainWindow(object):
             if (self.BtnConn.text() == "Conectar"):
                 return
             else:
-                try:          
+                try:
+                    self.TMf.stop()          
                     motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-                    system = ALProxy("ALSystem", self.robotIP, 9559)            
+                    system = ALProxy("ALSystem", self.robotIP, 9559)
+                    cv2.destroyAllWindows()            
                     motionProxy.post.rest()
                 except:
                     pass
@@ -643,8 +613,10 @@ class Ui_MainWindow(object):
                 aviso = "AVISO: Fim da conexão com o robô."
                 self.enviarAviso(aviso)
                 self.BtnConn.setText("Conectar")
-                self.BtnConn.setStyleSheet("background:#FFF;border:None;")
+                self.BtnConn.setStyleSheet("background:#e1e1e1;border:None;")
                 self.BtnConn.setEnabled(True)
+                
+                self.BtnNaoView.setEnabled(False)
                 
                 self.btn1x1.setEnabled(False)
                 self.btn2x1.setEnabled(False)
@@ -659,7 +631,7 @@ class Ui_MainWindow(object):
                 self.btn4x2.setEnabled(False)                
 
                 self.btnGB1x1.setText("Iniciar Vida")
-                self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+                self.btnGB1x1.setStyleSheet("background:#e1e1e1;border:None;")
                 self.btnGB1x1.setEnabled(False)                
                 self.btnGB3x1.setEnabled(False)
                 self.btnGB4x1.setEnabled(False)
@@ -689,7 +661,7 @@ class Ui_MainWindow(object):
         self.btnGB3x1.setEnabled(False)
         self.btnGB4x1.setEnabled(False)
         self.btnGB1x1.setText("Iniciar Vida")
-        self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+        self.btnGB1x1.setStyleSheet("background:#e1e1e1;border:None;")
         
     def startLife(self):
         self.AuxLeds = True
@@ -772,7 +744,7 @@ class Ui_MainWindow(object):
                 self.ledsOff()
                 self.btnGB1x1.setEnabled(True)
                 self.btnGB1x1.setText("Iniciar Vida")
-                self.btnGB1x1.setStyleSheet("background:#FFF;border:None;")
+                self.btnGB1x1.setStyleSheet("background:#e1e1e1;")
                 self.btnGB2x1.setEnabled(False)
                 aviso = "AVISO: Detector de face encerrado com sucesso."
                 self.enviarAviso(aviso)         
@@ -787,12 +759,116 @@ class Ui_MainWindow(object):
                 self.enviarAviso(aviso)
                 return 
 
+    def showNaoImage(self,IP, PORT):
+        # " First get an image from Nao, then show it on the screen with PIL."
+        try:
+            camProxy = ALProxy("ALVideoDevice", IP, PORT)
+        except:
+            return None
+        resolution = vision_definitions.kQQVGA   # VGA
+        colorSpace = vision_definitions.kRGBColorSpace  # RGB
+        videoClient = camProxy.subscribe("python_client", resolution, colorSpace, 5)
+
+        # Get a camera image.
+        # image[6] contains the image data passed as an array of ASCII chars.
+        naoImage = camProxy.getImageRemote(videoClient)
+        #   t1 = time.time()
+        #   # Time the image transfer.
+        #   print "acquisition delay ", t1 - t0
+        try:
+            camProxy.unsubscribe(videoClient)
+        except:
+            cv2.destroyAllWindows()
+            aviso = "AVISO: Conexão com NAO perdida."
+            self.enviarAviso(aviso)
+            self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
+            self.BtnNaoView.setText(_fromUtf8("Câmera NAO"))
+            return None
+        # Now we work with the image returned and save it as a PNG  using ImageDraw
+        # package.
+        # Get the image size and pixel array.
+        imageWidth = naoImage[0]
+        imageHeight = naoImage[1]
+        array = naoImage[6]
+
+        # Create a PIL Image from our pixel array.
+        im = Image.frombytes('RGB', (imageWidth, imageHeight), array)
+        opencvImage = cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
+        #   opencvImage = opencvImage.astype
+        return opencvImage
+
+    def buttonEmotionOn(self):
+        self.BtnNaoView.setStyleSheet("background-color:#40FF00;")
+        self.BtnNaoView.setText(_fromUtf8("Câmera Ligada"))
+        # self.BtnNaoView.setEnable(False)
+        return
+        
+    def detector_de_emocao(self):
+        arquivo_modelo = 'cnn_expressoes.h5' # referente aos pesos
+        arquivo_modelo_json = 'cnn_expressoes.json' # referente a arquitetura da Rede Neural
+        
+        # Código para recepção do open (carregando o modelo salvo no item 6)
+        json_file = open(arquivo_modelo_json, 'r')
+        loaded_model_json = json_file.read()
+        json_file.close() # liberação de memória 
+
+        # Fazendo a leitura do arquivo json para transformar esse para o modelo Tensorflow
+        expressoes = ['Medo','Feliz','Triste','Neutro']
+        loaded_model = model_from_json(loaded_model_json)
+        loaded_model.load_weights(arquivo_modelo)
+
+        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml') 
+        dim = (640,480)        
+        lista_frames = []        
+        frame = 0
+        tempoI = time.strftime("%H:%M:%S", time.gmtime())
+        self.buttonEmotionOn()
+
+        while True:            
+            try:
+                naoImage = self.showNaoImage(self.robotIP, self.PORT)
+                imagem = cv2.cvtColor(naoImage,cv2.COLOR_RGB2GRAY)
+            except:
+                cv2.destroyAllWindows()
+                self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
+                self.BtnNaoView.setText(_fromUtf8("Câmera NAO"))
+                break
+            faces = face_cascade.detectMultiScale(imagem, 1.04, 5)
+            
+            if len(faces) == 0:
+                pass
+            else:
+                for x,y,w,h in faces:
+                    # cv2.rectangle(naoImage,(x,y),(x+w, y+h),(0,255,0),1)
+                    roi_gray = naoImage[y:y+h,x:x+w]
+                    resized = cv2.resize(roi_gray, (160, 160))
+                    roi_gray = resized.astype('float')/255
+                    if frame%5 == 0:
+                        lista_frames.append(roi_gray)
+                    try:                        
+                        prediction = loaded_model.predict(np.array(lista_frames)) 
+                        emotion = expressoes[int(np.argmax(prediction[-1]))]
+                        cv2.putText(naoImage,emotion , (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
+                        legenda=time.strftime("%H-%M-%S", time.gmtime())
+                        cv2.imwrite('./imagensSessao/Frame'+legenda+'_'+emotion+'.png',naoImage)#Path to save your image
+                    except:
+                        pass
+
+            tempoF= time.strftime("%H:%M:%S", time.gmtime())               
+            imagem  = cv2.resize(naoImage,dim,interpolation = cv2.INTER_LINEAR)      
+            cv2.putText(imagem,"Inicio: "+tempoI,(10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
+            cv2.putText(imagem,"Hora: "+tempoF,(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
+            cv2.imshow('Pressione "Esc" para fechar a janela!',imagem) 
+            key = cv2.waitKey(10)
+            if key == 27:
+                cv2.destroyAllWindows()
+                self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
+                self.BtnNaoView.setText( _fromUtf8("Câmera NAO"))
+                self.BtnNaoView.setEnable(True)
+                break
     #Funções Movimentos
-    def levantar(self):
-        try:            
-            motion = ALProxy("ALMotion",self.robotIP,9559)
-            motion.post.wakeUp()
-            motion.post.setBreathEnabled("Body",True)
+    
+    def buttonsLevantarOn(self):
             self.btn1x1.setEnabled(True)
             self.btn1x2.setEnabled(True)
             self.btn1x3.setEnabled(True)
@@ -805,16 +881,22 @@ class Ui_MainWindow(object):
             self.btn4x2.setEnabled(True)
             self.btnGB3x1.setEnabled(True)
             self.btnGB4x1.setEnabled(True)
+            return
+        
+    def levantar(self):
+        try:            
+            motion = ALProxy("ALMotion",self.robotIP,9559)
+            motion.post.wakeUp()
+            motion.post.setBreathEnabled("Body",True)
+            self.buttonsLevantarOn()
 
             aviso = "AVISO: Comando levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR:Falha na execução do comando levantar."
-            self.enviarAviso(aviso)          
-    def sentar(self):
-        try:            
-            motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-            motionProxy.post.rest()
+            self.enviarAviso(aviso)
+            
+    def buttonsSentarOff(self):
             self.btn1x1.setEnabled(False)
             self.btn1x2.setEnabled(False)
             self.btn1x3.setEnabled(False)
@@ -827,6 +909,14 @@ class Ui_MainWindow(object):
             self.btn4x2.setEnabled(False)
             self.btnGB3x1.setEnabled(False)
             self.btnGB4x1.setEnabled(False)
+            return
+                  
+    def sentar(self):
+        try:            
+            motionProxy = ALProxy("ALMotion",self.robotIP,9559)
+            motionProxy.post.rest()
+            self.buttonsSentarOff()
+
             aviso = "AVISO: Comando sentar enviado com sucesso."
             self.enviarAviso(aviso)             
         except BaseException:
@@ -909,7 +999,7 @@ class Ui_MainWindow(object):
         else:
             self.btn2x3.setEnabled(False)
             self.movimento(duvida.duvida)
-            self.btn2x3.setEnabled(False)
+            self.btn2x3.setEnabled(True)
     def palmas(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
@@ -956,119 +1046,19 @@ class Ui_MainWindow(object):
             self.motion.post.moveInit()
             self.motion.post.moveTo(0,0,-0.1)
     
-class ImageWidget(QWidget):
-    """
-    Tiny widget to display camera images from Naoqi.
-    """
-    def __init__(self, IP, PORT, CameraID, parent=None):
-        """
-        Initialization.
-        """
-        QWidget.__init__(self, parent)
-        self._image = QImage()
-        self.setWindowTitle('Nao')
-
-        self._imgWidth = 640    
-        self._imgHeight = 480
-        self._cameraID = CameraID
-        self.resize(self._imgWidth, self._imgHeight)
-
-        # Proxy to ALVideoDevice.
-        self._videoProxy = None
-
-        # Our video module name.
-        self._imgClient = ""
-
-        # This will contain this alImage we get from Nao.
-        self._alImage = None
-
-        self._registerImageClient(IP, PORT)
-
-        # Trigget 'timerEvent' every 100 ms.
-        self.startTimer(100)
-        self.jan = None
 
 
-    def _registerImageClient(self, IP, PORT):
-        """
-        Register our video module to the robot.
-        """
-        self._videoProxy = ALProxy("ALVideoDevice", IP, PORT)
-        resolution = vision_definitions.kQVGA  # 320 * 240
-        colorSpace = vision_definitions.kRGBColorSpace
-        self._imgClient = self._videoProxy.subscribe("_client", resolution, colorSpace, 24)
+# import sys
 
-        # Select camera.
-        self._videoProxy.setParam(vision_definitions.kCameraSelectID,
-                                  self._cameraID)
-
-
-    def _unregisterImageClient(self):
-        """
-        Unregister our naoqi video module.
-        """
-        if self._imgClient != "":
-            self._videoProxy.unsubscribe(self._imgClient)
-
-
-    def paintEvent(self, event):
-        """
-        Draw the QImage on screen.
-        """
-        painter = QPainter(self)
-        painter.drawImage(painter.viewport(), self._image)
-
-
-    def _updateImage(self):
-        """
-        Retrieve a new image from Nao.
-        """
-        self._alImage = self._videoProxy.getImageRemote(self._imgClient)
-        self._image = QImage(self._alImage[6],           # Pixel array.
-                             self._alImage[0],           # Width.
-                             self._alImage[1],           # Height.
-                             QImage.Format_RGB888)
-
-
-    def timerEvent(self, event):
-        """
-        Called periodically. Retrieve a nao image, and update the widget.
-        """
-        self._updateImage()
-        self.update()
-
-
-    def __del__(self):
-        """
-        When the widget is deleted, we unregister our naoqi video module.
-        """
-        self._unregisterImageClient()
-    
-class VisionNAO(QObject):
-    finished = pyqtSignal()
-        
-    def naoVision(self):
-        try:
-            self.IP = str(iprobo)            
-            self.CameraID = 0
-            self.PORT= 9559
-            global jan 
-            jan = ImageWidget(self.IP, self.PORT, self.CameraID)
-            jan.show()
-        except Exception:
-            return
-
-import sys
-
-class interface(QtGui.QMainWindow,Ui_MainWindow):
-    def __init__(self):
-        QtGui.QMainWindow.__init__(self)
-        Ui_MainWindow.__init__(self)
-        self.setupUi(self)
+# class interface(QtGui.QMainWindow,Ui_MainWindow):
+#     def __init__(self):
+#         QtGui.QMainWindow.__init__(self)
+#         Ui_MainWindow.__init__(self)
+#         self.setupUi(self)
         
 
-if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    window = interface()
-    window.show()
-    sys.exit(app.exec_())
+# if __name__ == "__main__":
+#     app = QtGui.QApplication(sys.argv)
+#     window = interface()
+#     window.show()
+#     sys.exit(app.exec_())
