@@ -65,7 +65,8 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet("""
-                        font:16px;                        
+                                 font:16px;                        
+                                 
                           """)
 
         self.centralwidget = QtGui.QWidget(MainWindow)        
@@ -444,6 +445,7 @@ class Ui_MainWindow(object):
         self.BtnConn.setText("Conectar")
         self.BtnConn.setStyleSheet("background:#e1e1e1;")
         self.BtnEnc.setEnabled(False)
+        self.BtnNaoView.setText(_fromUtf8("Câmera NAO"))
         self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
         self.BtnNaoView.setEnabled(False)
         
