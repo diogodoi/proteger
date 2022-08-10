@@ -16,6 +16,10 @@ from tensorflow.python.keras.models import load_model
 # Para salvar o modelo no formato json
 from tensorflow.python.keras.models import model_from_json
 
+from retrivingImages import NAOimageRetriving
+
+
+
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -55,6 +59,7 @@ class Ui_MainWindow(object):
         self.AuxLeds = False        
         self.robotIP = ""
         self.PORT = 9559
+        self.cameraWindow = None
         
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
@@ -311,7 +316,7 @@ class Ui_MainWindow(object):
         
         #Botões Configurações
         self.BtnConn.clicked.connect(self.conexao)
-        self.BtnNaoView.clicked.connect(self.detector_de_emocao)
+        self.BtnNaoView.clicked.connect(self.retrivingImage)
         self.BtnEnc.clicked.connect(self.desconectar)
 
         #Botões Movimentos
@@ -484,7 +489,7 @@ class Ui_MainWindow(object):
         try:           
             self.robotIP = ""
             self.buttonsOff()
-            
+            self.cameraWindow.close()
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
@@ -609,7 +614,7 @@ class Ui_MainWindow(object):
                     self.TMf.stop()          
                     motionProxy = ALProxy("ALMotion",self.robotIP,9559)
                     system = ALProxy("ALSystem", self.robotIP, 9559)
-                    cv2.destroyAllWindows()            
+                    self.cameraWindow.close()    
                     motionProxy.post.rest()
                 except:
                     pass
@@ -741,113 +746,23 @@ class Ui_MainWindow(object):
                 self.enviarAviso(aviso)
                 return 
 
-    def showNaoImage(self,IP, PORT):
-        # " First get an image from Nao, then show it on the screen with PIL."
-        try:
-            camProxy = ALProxy("ALVideoDevice", IP, PORT)
-        except:
-            return None
-        resolution = vision_definitions.kQQVGA   # VGA
-        colorSpace = vision_definitions.kRGBColorSpace  # RGB
-        videoClient = camProxy.subscribe("python_client", resolution, colorSpace, 5)
-
-        # Get a camera image.
-        # image[6] contains the image data passed as an array of ASCII chars.
-        naoImage = camProxy.getImageRemote(videoClient)
-        #   t1 = time.time()
-        #   # Time the image transfer.
-        #   print "acquisition delay ", t1 - t0
-        try:
-            camProxy.unsubscribe(videoClient)
-        except:
-            cv2.destroyAllWindows()
-            aviso = "AVISO: Conexão com NAO perdida."
-            self.enviarAviso(aviso)
-            self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
-            self.BtnNaoView.setText(_fromUtf8("Câmera NAO"))
-            return None
-        # Now we work with the image returned and save it as a PNG  using ImageDraw
-        # package.
-        # Get the image size and pixel array.
-        imageWidth = naoImage[0]
-        imageHeight = naoImage[1]
-        array = naoImage[6]
-
-        # Create a PIL Image from our pixel array.
-        im = Image.frombytes('RGB', (imageWidth, imageHeight), array)
-        opencvImage = cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
-        #   opencvImage = opencvImage.astype
-        return opencvImage
-
     def buttonEmotionOn(self):
         self.BtnNaoView.setStyleSheet("background-color:#40FF00;")
         self.BtnNaoView.setText(_fromUtf8("Câmera Ligada"))
         # self.BtnNaoView.setEnable(False)
         return
-        
-    def detector_de_emocao(self):
-        arquivo_modelo = 'cnn_expressoes.h5' # referente aos pesos
-        arquivo_modelo_json = 'cnn_expressoes.json' # referente a arquitetura da Rede Neural
-        
-        # Código para recepção do open (carregando o modelo salvo no item 6)
-        json_file = open(arquivo_modelo_json, 'r')
-        loaded_model_json = json_file.read()
-        json_file.close() # liberação de memória 
-
-        # Fazendo a leitura do arquivo json para transformar esse para o modelo Tensorflow
-        expressoes = ['Medo','Feliz','Triste','Neutro']
-        loaded_model = model_from_json(loaded_model_json)
-        loaded_model.load_weights(arquivo_modelo)
-
-        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml') 
-        dim = (640,480)        
-        lista_frames = []        
-        frame = 0
-        tempoI = time.strftime("%H:%M:%S", time.gmtime())
-        self.buttonEmotionOn()
-
-        while True:            
-            try:
-                naoImage = self.showNaoImage(self.robotIP, self.PORT)
-                imagem = cv2.cvtColor(naoImage,cv2.COLOR_RGB2GRAY)
-            except:
-                cv2.destroyAllWindows()
-                self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
-                self.BtnNaoView.setText(_fromUtf8("Câmera NAO"))
-                break
-            faces = face_cascade.detectMultiScale(imagem, 1.04, 5)
-            
-            if len(faces) == 0:
-                pass
-            else:
-                for x,y,w,h in faces:
-                    # cv2.rectangle(naoImage,(x,y),(x+w, y+h),(0,255,0),1)
-                    roi_gray = naoImage[y:y+h,x:x+w]
-                    resized = cv2.resize(roi_gray, (160, 160))
-                    roi_gray = resized.astype('float')/255
-                    if frame%5 == 0:
-                        lista_frames.append(roi_gray)
-                    try:                        
-                        prediction = loaded_model.predict(np.array(lista_frames)) 
-                        emotion = expressoes[int(np.argmax(prediction[-1]))]
-                        cv2.putText(naoImage,emotion , (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
-                        legenda=time.strftime("%H-%M-%S", time.gmtime())
-                        cv2.imwrite('./imagensSessao/Frame'+legenda+'_'+emotion+'.png',naoImage)#Path to save your image
-                    except:
-                        pass
-
-            tempoF= time.strftime("%H:%M:%S", time.gmtime())               
-            imagem  = cv2.resize(naoImage,dim,interpolation = cv2.INTER_LINEAR)      
-            cv2.putText(imagem,"Inicio: "+tempoI,(10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
-            cv2.putText(imagem,"Hora: "+tempoF,(10,40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
-            cv2.imshow('Pressione "Esc" para fechar a janela!',imagem) 
-            key = cv2.waitKey(10)
-            if key == 27:
-                cv2.destroyAllWindows()
-                self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
-                self.BtnNaoView.setText( _fromUtf8("Câmera NAO"))
-                self.BtnNaoView.setEnable(True)
-                break
+    
+    def retrivingImage(self):
+        if self.cameraWindow is None:
+            self.cameraWindow  = NAOimageRetriving(self.robotIP, self.PORT, 0)
+            self.cameraWindow.show()
+            self.cameraWindow.exec_()
+            self.buttonEmotionOn()
+        else:
+            aviso = "Câmera já está em execução !"
+            self.enviarAviso(aviso)
+              
+  
     #Funções Movimentos
     
     def buttonsLevantarOn(self):
