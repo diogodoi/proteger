@@ -212,7 +212,7 @@ class Ui_MainWindow(object):
         self.label_avisos.setObjectName(_fromUtf8("Avisos"))        
         self.label_avisos.setStyleSheet("border:none")
         self.label_avisos.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridAvisos.addWidget(self.label_avisos, 0, 3, 1, 2)  
+        self.gridAvisos.addWidget(self.label_avisos, 0, 2, 1, 2)  
   
         self.tableWidget = QtGui.QTableWidget(self.Avisos)
         self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -234,7 +234,7 @@ class Ui_MainWindow(object):
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setHighlightSections(False)
         self.tableWidget.setStyleSheet("font:12px;text-decoration: none;color:black;")
-        self.gridAvisos.addWidget(self.tableWidget, 1, 1, 2, 6)
+        self.gridAvisos.addWidget(self.tableWidget, 1, 0, 2, 6)
       
         self.logo_cti = QtGui.QLabel(self.Avisos)
         self.logo_cti.setMaximumSize(100,60) 
@@ -242,7 +242,7 @@ class Ui_MainWindow(object):
         self.logo_cti.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoCTIcampinas.jpeg")))
         self.logo_cti.setScaledContents(True)
         self.logo_cti.setObjectName(_fromUtf8("logo_cti"))
-        self.gridAvisos.addWidget(self.logo_cti, 3, 2, 1, 1)
+        self.gridAvisos.addWidget(self.logo_cti, 3, 1, 1, 1)
               
         self.logo_icmc = QtGui.QLabel(self.Avisos)
         self.logo_icmc.setMaximumSize(100,60)            
@@ -250,7 +250,7 @@ class Ui_MainWindow(object):
         self.logo_icmc.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoICMC.png")))
         self.logo_icmc.setScaledContents(True)
         self.logo_icmc.setObjectName(_fromUtf8("logo_icmc"))
-        self.gridAvisos.addWidget(self.logo_icmc, 3, 3, 1, 1)
+        self.gridAvisos.addWidget(self.logo_icmc, 3, 2, 1, 1)
         
         self.logo_lar = QtGui.QLabel(self.Avisos)
         self.logo_lar.setMaximumSize(100,60)        
@@ -258,7 +258,7 @@ class Ui_MainWindow(object):
         self.logo_lar.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoLars.png")))
         self.logo_lar.setScaledContents(True)
         self.logo_lar.setObjectName(_fromUtf8("logo_lar"))
-        self.gridAvisos.addWidget(self.logo_lar, 3, 4, 1, 1)
+        self.gridAvisos.addWidget(self.logo_lar, 3, 3, 1, 1)
         
         # self.logo_Unesp = QtGui.QLabel(self.Avisos)
         # # self.logo_Unesp.resize(100,60)
@@ -420,6 +420,7 @@ class Ui_MainWindow(object):
             self.robotIP = self.setIP()
             self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
             self.posture = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
+            self.tracker = ALProxy("ALTracker", self.robotIP, self.PORT)
             aviso = "AVISO: Conexão com "+self.robotIP+" estabelecida." 
             self.enviarAviso(aviso)
         except BaseException:
@@ -490,6 +491,7 @@ class Ui_MainWindow(object):
             self.robotIP = ""
             self.buttonsOff()
             self.cameraWindow.close()
+            self.cameraWindow = None
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
@@ -543,66 +545,15 @@ class Ui_MainWindow(object):
         cursor.execute(delete)
         conn.commit()
         conn.close()
-            
-    def faceDetector(self):
-        try:
-            faceProxy = ALProxy("ALFaceDetection", self.robotIP, self.PORT)
-            period = 500
-            faceProxy.subscribe("Test_Face", period, 0.0 )
-            memoryProxy = ALProxy("ALMemory", self.robotIP, self.PORT)
-            memValue = "FaceDetected"
-            val = memoryProxy.getData(memValue) 
-        except Exception:
-            aviso = "ERROR:Não Foi possível criar o proxy de detecção de face."
-            self.enviarAviso(aviso)
-            return
-        try:    
-            if(val and isinstance(val, list) and len(val) >= 2): 
-                        
-                timeStamp = val[0]   
-                        
-                faceInfoArray = val[1]
+        
+    def faceTracker(self):
+        # Add target to track.
+        targetName = "Face"
+        faceWidth = 0.5
+        self.tracker.registerTarget(targetName, faceWidth)
 
-                try:            
-                    for j in range( len(faceInfoArray)-1 ):
-                                faceInfo = faceInfoArray[j]
-
-                                # First Field = Shape info.
-                                faceShapeInfo = faceInfo[0]
-
-                                # Second Field = Extra info (empty for now).
-                                faceExtraInfo = faceInfo[1]
-
-                                # print "  alpha %.3f - beta %.3f" % (faceShapeInfo[1], faceShapeInfo[2])
-                                # print "  width %.3f - height %.3f" % (faceShapeInfo[3], faceShapeInfo[4])
-                                return True
-
-                except Exception:
-                        aviso = "Face detectada, mas parece que getData é inválido."
-                        self.enviarAviso(aviso)
-            else:
-                return False
-            faceProxy.unsubscribe("Test_Face")
-        except Exception:
-            pass
-
-    def face_fun(self):
-        Face = self.faceDetector()
-        self.aux = self.basic_awareness.isAwarenessRunning()
-        if (Face == True):
-            self.faceThread.exit()             
-        if (self.aux == False):
-            self.basic_awareness.startAwareness()
-           
-        if (self.aux == True and Face == True):
-            self.basic_awareness.stopAwareness()
-            self.faceThread.exit()
-            return           
-        else:
-            self.olhaPraFrente()
-            self.faceThread.exit()            
-            return        
-    
+        # Then, start tracker.
+        self.tracker.track(targetName)
         
     #Funções dos botões
     def desligar(self):
@@ -614,7 +565,8 @@ class Ui_MainWindow(object):
                     self.TMf.stop()          
                     motionProxy = ALProxy("ALMotion",self.robotIP,9559)
                     system = ALProxy("ALSystem", self.robotIP, 9559)
-                    self.cameraWindow.close()    
+                    self.cameraWindow.close()
+                    self.cameraWindow = None    
                     motionProxy.post.rest()
                 except:
                     pass
@@ -629,8 +581,7 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             
     def ledsOff(self):
-        motion = ALProxy("ALMotion", self.robotIP, self.PORT)
-        motion.post.rest() 
+        self.motion.post.rest() 
         leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         name = "AllLeds"        
         leds.post.off(name)
@@ -651,15 +602,13 @@ class Ui_MainWindow(object):
         self.btnGB1x1.setStyleSheet("background:#e1e1e1;border:None;")
         
     def startLife(self):
-        self.AuxLeds = True
-        motion = ALProxy("ALMotion", self.robotIP, self.PORT)
+        self.AuxLeds = True        
         leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         names = ['BrainLeds','FaceLeds','ChestLeds','FeetLeds','EarLeds']
-        for name in names: leds.post.on(name)            
-        motion = ALProxy("ALMotion", self.robotIP, self.PORT)
-        motion.post.wakeUp()
+        for name in names: leds.post.on(name) 
+        self.motion.post.wakeUp()
         # motion.post.goToPosture("Stand",0.3)
-        motion.post.setBreathEnabled("Body",True)
+        self.motion.post.setBreathEnabled("Body",True)
         self.btn1x1.setEnabled(True)
         self.btn2x1.setEnabled(True)
         self.btn3x1.setEnabled(True)
@@ -673,27 +622,7 @@ class Ui_MainWindow(object):
         self.btn4x2.setEnabled(True)
         self.btnGB3x1.setEnabled(True)
         self.btnGB4x1.setEnabled(True)
-            
-    def olhaPraFrente(self):
-
-        names = list()
-        times = list()
-        keys = list()
-
-        names.append("HeadPitch")
-        times.append([1])
-        keys.append([-0.15708])
-
-        names.append("HeadYaw")
-        times.append([1])
-        keys.append([0.00698132])
-        
-        self.motion.angleInterpolation(names, keys, times, True)
     
-    def facedetector(self):
-            self.faceThread = QThread()
-            self.faceThread.started.connect(self.face_fun)
-            self.faceThread.start()
         
     def startNaoRecording(self):
         if (self.BtnConn.text() == "Conectar"):
@@ -708,9 +637,7 @@ class Ui_MainWindow(object):
                 self.enviarAviso(aviso)
                 return 
             try:
-                self.TMf = QTimer(self)
-                self.TMf.timeout.connect(self.facedetector)
-                self.TMf.start(7000)
+                self.faceTracker()
                 aviso = "AVISO: Detector de face inicializado com sucesso."
                 self.enviarAviso(aviso)
                 self.btnGB1x1.setEnabled(False)
@@ -727,7 +654,8 @@ class Ui_MainWindow(object):
             return
         else:
             try:
-                self.TMf.stop()
+                self.tracker.stopTracker()
+                self.tracker.unregisterAllTargets()
                 self.ledsOff()
                 self.btnGB1x1.setEnabled(True)
                 self.btnGB1x1.setText("Iniciar Vida")
@@ -749,15 +677,15 @@ class Ui_MainWindow(object):
     def buttonEmotionOn(self):
         self.BtnNaoView.setStyleSheet("background-color:#40FF00;")
         self.BtnNaoView.setText(_fromUtf8("Câmera Ligada"))
-        # self.BtnNaoView.setEnable(False)
+        self.BtnNaoView.setEnabled(False)
         return
     
     def retrivingImage(self):
         if self.cameraWindow is None:
             self.cameraWindow  = NAOimageRetriving(self.robotIP, self.PORT, 0)
             self.cameraWindow.show()
-            self.cameraWindow.exec_()
             self.buttonEmotionOn()
+            self.cameraWindow.exec_()
         else:
             aviso = "Câmera já está em execução !"
             self.enviarAviso(aviso)
@@ -782,12 +710,12 @@ class Ui_MainWindow(object):
         
     def levantar(self):
         try:            
-            motion = ALProxy("ALMotion",self.robotIP,9559)
-            motion.post.wakeUp()
-            motion.post.setBreathEnabled("Body",True)
+            # motion = ALProxy("ALMotion",self.robotIP,9559)
+            self.motion.post.wakeUp()
+            self.motion.post.setBreathEnabled("Body",True)
             self.buttonsLevantarOn()
 
-            aviso = "AVISO: Comando levantar enviado com sucesso."
+            aviso = "AVISO: Comando Levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR:Falha na execução do comando levantar."
@@ -810,11 +738,11 @@ class Ui_MainWindow(object):
                   
     def sentar(self):
         try:            
-            motionProxy = ALProxy("ALMotion",self.robotIP,9559)
-            motionProxy.post.rest()
+            # motionProxy = ALProxy("ALMotion",self.robotIP,9559)
+            self.motion.post.rest()
             self.buttonsSentarOff()
 
-            aviso = "AVISO: Comando sentar enviado com sucesso."
+            aviso = "AVISO: Comando Sentar enviado com sucesso."
             self.enviarAviso(aviso)             
         except BaseException:
             aviso = "ERROR:Falha na execução do comando sentar."
@@ -860,63 +788,63 @@ class Ui_MainWindow(object):
             return
         else:
             self.btn1x1.setEnabled(False)
-            self.movimento(concordar.sim)
+            self.movimento(concordar.Concordar)
             self.btn1x1.setEnabled(True)
     def discordar(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn1x2.setEnabled(False)
-            self.movimento(discordar.nao)
+            self.movimento(discordar.Discordar)
             self.btn1x2.setEnabled(True)
     def nossa(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn1x3.setEnabled(False)
-            self.movimento(nossa.nossa)
+            self.movimento(nossa.Nossa)
             self.btn1x3.setEnabled(True)
     def comemorar(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn2x1.setEnabled(False)        
-            self.movimento(comemorar.comemorar)
+            self.movimento(comemorar.Comemorar)
             self.btn2x1.setEnabled(True)
     def empatia(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn2x2.setEnabled(False)
-            self.movimento(empatia.empatia)
+            self.movimento(empatia.Empatia)
             self.btn2x2.setEnabled(True)
     def duvida(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn2x3.setEnabled(False)
-            self.movimento(duvida.duvida)
+            self.movimento(duvida.Duvida)
             self.btn2x3.setEnabled(True)
     def palmas(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn3x2.setEnabled(False)
-            self.movimento(palmas.palmas)
+            self.movimento(palmas.Palmas)
             self.btn3x2.setEnabled(True)
     def tocaqui(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn3x3.setEnabled(False)
-            self.movimento(toca_aqui.tocaAqui)
+            self.movimento(toca_aqui.TocaAqui)
             self.btn3x3.setEnabled(True)
     def tchau(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
             return
         else:
             self.btn4x1.setEnabled(False)
-            self.movimento(tchau.tchau)
+            self.movimento(tchau.Tchau)
             self.btn4x1.setEnabled(True)
     def beijos(self):
         if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
@@ -924,7 +852,7 @@ class Ui_MainWindow(object):
         else:
             self.btn4x2.setEnabled(False)
             self.motion.wakeUp()
-            self.movimento(beijos.beijos)
+            self.movimento(beijos.Beijos)
             self.btn4x2.setEnabled(True)
 
     #extras    
