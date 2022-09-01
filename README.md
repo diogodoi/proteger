@@ -23,6 +23,7 @@ Acesse: https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyqt4 para download do PyQt4
 
 Para a instalação das outras bibliotecas utilize pip install requeriments.txt
 
+Alguns arquivos necessários para o funcionamento do detector de emoção: https://drive.google.com/drive/folders/1ucO4Nc_6NMvh3NaG1iic4FhX-QsZrBsj?usp=sharing. Baixe e coloque eles na mesma pasta onde se encontra o "Start.py".
 #### Módulos da Interface
 
 A interface GUIPsyin é responsável pela comunicação do computador com o robô NAO. Primeiro é necessário obter-se o IP do robô NAO, esse IP pode ser adquirido pressionando-se o botão no meio do peito do robô NAO.
