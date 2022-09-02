@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget,QTableView
 from PyQt4.QtCore import QTimer, QBasicTimer, QObject, Qt,QThread, pyqtSignal
 from naoqi import ALProxy, ALBroker, ALModule
-from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui,focus,arm_pose
+from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui
 from designSobre import Ui_Sobre
 import vision_definitions
 import sqlite3
@@ -59,7 +59,6 @@ class Ui_MainWindow(object):
         self.AuxLeds = False        
         self.robotIP = ""
         self.PORT = 9559
-        self.cameraWindow = None
         
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
@@ -561,13 +560,11 @@ class Ui_MainWindow(object):
             if (self.BtnConn.text() == "Conectar"):
                 return
             else:
-                try:
-                    self.TMf.stop()          
-                    motionProxy = ALProxy("ALMotion",self.robotIP,9559)
+                try:          
                     system = ALProxy("ALSystem", self.robotIP, 9559)
                     self.cameraWindow.close()
                     self.cameraWindow = None    
-                    motionProxy.post.rest()
+                    self.motion.post.rest()
                 except:
                     pass
                 
@@ -622,8 +619,7 @@ class Ui_MainWindow(object):
         self.btn4x2.setEnabled(True)
         self.btnGB3x1.setEnabled(True)
         self.btnGB4x1.setEnabled(True)
-    
-        
+     
     def startNaoRecording(self):
         if (self.BtnConn.text() == "Conectar"):
             return
@@ -677,16 +673,16 @@ class Ui_MainWindow(object):
     def buttonEmotionOn(self):
         self.BtnNaoView.setStyleSheet("background-color:#40FF00;")
         self.BtnNaoView.setText(_fromUtf8("Câmera Ligada"))
-        self.BtnNaoView.setEnabled(False)
+        # self.BtnNaoView.setEnabled(False)
         return
     
     def retrivingImage(self):
-        if self.cameraWindow is None:
+        try:
             self.cameraWindow  = NAOimageRetriving(self.robotIP, self.PORT, 0)
             self.cameraWindow.show()
             self.buttonEmotionOn()
             self.cameraWindow.exec_()
-        else:
+        except:
             aviso = "Câmera já está em execução !"
             self.enviarAviso(aviso)
               
