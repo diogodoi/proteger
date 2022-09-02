@@ -21,7 +21,7 @@ Acesse: https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyqt4 para download do PyQt4
 
 Para a instalação das outras bibliotecas utilize pip install requeriments.txt
 
-Alguns arquivos necessários para o funcionamento do detector de emoção: https://drive.google.com/drive/folders/1ucO4Nc_6NMvh3NaG1iic4FhX-QsZrBsj?usp=sharing. Baixe e coloque eles na mesma pasta onde se encontra o "Start.py".
+Arquivos necessários para o funcionamento do detector de emoção: https://drive.google.com/drive/folders/1ucO4Nc_6NMvh3NaG1iic4FhX-QsZrBsj?usp=sharing. Baixe e coloque eles na mesma pasta onde se encontra o "Start.py".
 
 #### Módulos da Interface
 
