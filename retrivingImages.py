@@ -50,7 +50,7 @@ class NAOimageRetriving(QWidget):
         # Trigget 'timerEvent' every 100 ms.
         self.startTimer(100)
 
-        self.tempoI = time.strftime("%H:%M:%S", time.gmtime())
+        self.tempoI = time.strftime("%H:%M:%S", time.localtime())
         
         arquivo_modelo = 'cnn_expressoes.h5' # referente aos pesos
         arquivo_modelo_json = 'cnn_expressoes.json' # referente a arquitetura da Rede Neural
@@ -109,7 +109,7 @@ class NAOimageRetriving(QWidget):
         array = self._alImage[6] # Pixel array.        
         image = np.fromstring(array, np.uint8).reshape(imageHeight, imageWidth, 3 )
         opencvImage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        tempoF= time.strftime("%H:%M:%S", time.gmtime()) 
+        tempoF= time.strftime("%H:%M:%S", time.localtime()) 
         
         faces = self.face_cascade.detectMultiScale(opencvImage, 1.04, 5)
         frame = 0
@@ -129,7 +129,7 @@ class NAOimageRetriving(QWidget):
                     prediction = self.loaded_model.predict(np.array(lista_frames)) 
                     emotion = self.expressoes[int(np.argmax(prediction[-1]))]
                     cv2.putText(opencvImage,emotion , (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2, cv2.LINE_AA)
-                    legenda=time.strftime("%H-%M-%S", time.gmtime())
+                    legenda=time.strftime("%H-%M-%S", time.localtime())
                     cv2.imwrite('./imagensSessao/Frame'+legenda+'_'+emotion+'.png',opencvImage)#Path to save your image
                 except:
                     pass 
