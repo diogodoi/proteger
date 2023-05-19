@@ -2,20 +2,11 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget,QTableView
 from PyQt4.QtCore import QTimer, QBasicTimer, QObject, Qt,QThread, pyqtSignal
-from naoqi import ALProxy, ALBroker, ALModule
+from naoqi import ALProxy
 from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui
 from designSobre import Ui_Sobre
-import vision_definitions
 import sqlite3
 import time
-import random
-from PIL import Image
-import numpy as np
-import cv2
-from tensorflow.python.keras.models import load_model
-# Para salvar o modelo no formato json
-from tensorflow.python.keras.models import model_from_json
-
 from retrivingImages import NAOimageRetriving
 
 
@@ -63,14 +54,13 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))        
         
-        MainWindow.setMinimumSize(QtCore.QSize(800, 800))
+        MainWindow.setMinimumSize(QtCore.QSize(840, 840))
         
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet("""
-                                 font:16px;                        
-                                 
+                                 font:16px;                     
                           """)
 
         self.centralwidget = QtGui.QWidget(MainWindow)        
@@ -116,18 +106,21 @@ class Ui_MainWindow(object):
               
         self.BtnConn = QtGui.QPushButton(self.Menu)               
         self.BtnConn.setObjectName(_fromUtf8("BtnConn"))
+        self.BtnConn.setToolTip(_fromUtf8("Faz a conexão com o robô."))
 
         self.gridMenu.addWidget(self.BtnConn, 1, 2, 1, 1)
         
         self.BtnNaoView = QtGui.QPushButton(self.Menu)        
         self.BtnNaoView.setObjectName(_fromUtf8("BtnNaoView"))
         self.BtnNaoView.setEnabled(False)
+        self.BtnNaoView.setToolTip(_fromUtf8("Faz a captura do vídeo do robô."))
 
         self.gridMenu.addWidget(self.BtnNaoView, 2, 2, 1, 1)
        
         self.BtnEnc = QtGui.QPushButton(self.Menu)        
         self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
         self.BtnEnc.setEnabled(False)
+        self.BtnEnc.setToolTip(_fromUtf8("Encerra a conexão com o robô."))
 
         self.gridMenu.addWidget(self.BtnEnc, 3, 2, 1, 1)
         
@@ -145,46 +138,59 @@ class Ui_MainWindow(object):
         self.btn1x1 = QtGui.QPushButton(self.Movimentos)
         self.btn1x1.setObjectName(_fromUtf8("btn1x1"))
         self.gridLayout_2.addWidget(self.btn1x1, 0, 3, 1, 1)
+        self.btn1x1.setToolTip(_fromUtf8("Movimento a cabeça para baixo e para cima."))
         
         self.btn1x2 = QtGui.QPushButton(self.Movimentos)
         self.btn1x2.setObjectName(_fromUtf8("btn1x2"))
         self.gridLayout_2.addWidget(self.btn1x2, 0, 6, 1, 1)
-        
-        self.btn2x2 = QtGui.QPushButton(self.Movimentos)
-        self.btn2x2.setObjectName(_fromUtf8("btn2x2"))
-        self.gridLayout_2.addWidget(self.btn2x2, 1, 6, 1, 1)
+        self.btn1x2.setToolTip(_fromUtf8("Movimenta a cabeça para os lados."))
+                        
+        self.btn1x3 = QtGui.QPushButton(self.Movimentos)
+        self.btn1x3.setObjectName(_fromUtf8("btn1x3"))
+        self.gridLayout_2.addWidget(self.btn1x3, 0, 8, 1, 1)
+        self.btn1x3.setToolTip(_fromUtf8("Levanta a mão em direção a testa."))
         
         self.btn2x1 = QtGui.QPushButton(self.Movimentos)
         self.btn2x1.setObjectName(_fromUtf8("btn2x1"))
         self.gridLayout_2.addWidget(self.btn2x1, 1, 3, 1, 1)
+        self.btn2x1.setToolTip(_fromUtf8("Faz uma dança de comemoração."))
         
-        self.btn1x3 = QtGui.QPushButton(self.Movimentos)
-        self.btn1x3.setObjectName(_fromUtf8("btn1x3"))
-        self.gridLayout_2.addWidget(self.btn1x3, 0, 8, 1, 1)
-        
-        self.btn3x3 = QtGui.QPushButton(self.Movimentos)
-        self.btn3x3.setObjectName(_fromUtf8("btn3x3"))
-        self.gridLayout_2.addWidget(self.btn3x3, 2, 8, 1, 1)
+        self.btn2x2 = QtGui.QPushButton(self.Movimentos)
+        self.btn2x2.setObjectName(_fromUtf8("btn2x2"))
+        self.gridLayout_2.addWidget(self.btn2x2, 1, 6, 1, 1)
+        self.btn2x2.setToolTip(_fromUtf8("Movimenta a cabeça bem devagar para baixo.") )     
         
         self.btn2x3 = QtGui.QPushButton(self.Movimentos)
         self.btn2x3.setObjectName(_fromUtf8("btn2x3"))
         self.gridLayout_2.addWidget(self.btn2x3, 1, 8, 1, 1)
+        self.btn2x3.setToolTip(_fromUtf8("Abre os braços em uma posição receptiva."))
+                
+        self.btn3x1 = QtGui.QPushButton(self.Movimentos)
+        self.btn3x1.setObjectName(_fromUtf8("btn3x1"))
+        self.gridLayout_2.addWidget(self.btn3x1, 2, 3, 1, 1)
+        self.btn3x1.setToolTip(_fromUtf8("Faz o robô sentar/levantar"))
         
         self.btn3x2 = QtGui.QPushButton(self.Movimentos)
         self.btn3x2.setObjectName(_fromUtf8("btn3x2"))
         self.gridLayout_2.addWidget(self.btn3x2, 2, 6, 1, 1)
+        self.btn3x2.setToolTip(_fromUtf8("Faz o robô bater palmas."))
+                
+        self.btn3x3 = QtGui.QPushButton(self.Movimentos)
+        self.btn3x3.setObjectName(_fromUtf8("btn3x3"))
+        self.gridLayout_2.addWidget(self.btn3x3, 2, 8, 1, 1)
+        self.btn3x3.setToolTip(_fromUtf8("O robô levanta a mão para cumprimentar."))
         
-        self.btn3x1 = QtGui.QPushButton(self.Movimentos)
-        self.btn3x1.setObjectName(_fromUtf8("btn3x1"))
-        self.gridLayout_2.addWidget(self.btn3x1, 2, 3, 1, 1)
+        
         
         self.btn4x1 = QtGui.QPushButton(self.Movimentos)
         self.btn4x1.setObjectName(_fromUtf8("btn4x1"))
         self.gridLayout_2.addWidget(self.btn4x1, 3, 3, 1, 1)
+        self.btn4x1.setToolTip(_fromUtf8("O robô acena."))
         
         self.btn4x2 = QtGui.QPushButton(self.Movimentos)
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
         self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)
+        self.btn4x2.setToolTip(_fromUtf8("O robô envia um beijo."))
         
         self.btn1x1.setEnabled(False)
         self.btn2x1.setEnabled(False)
@@ -211,7 +217,7 @@ class Ui_MainWindow(object):
         self.label_avisos.setObjectName(_fromUtf8("Avisos"))        
         self.label_avisos.setStyleSheet("border:none")
         self.label_avisos.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridAvisos.addWidget(self.label_avisos, 0, 2, 1, 2)  
+        self.gridAvisos.addWidget(self.label_avisos, 0, 3, 1, 1)  
   
         self.tableWidget = QtGui.QTableWidget(self.Avisos)
         self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -233,7 +239,7 @@ class Ui_MainWindow(object):
         self.tableWidget.verticalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setHighlightSections(False)
         self.tableWidget.setStyleSheet("font:12px;text-decoration: none;color:black;")
-        self.gridAvisos.addWidget(self.tableWidget, 1, 0, 2, 6)
+        self.gridAvisos.addWidget(self.tableWidget, 1, 1, 2, 5)
       
         self.logo_cti = QtGui.QLabel(self.Avisos)
         self.logo_cti.setMaximumSize(100,60) 
@@ -241,7 +247,7 @@ class Ui_MainWindow(object):
         self.logo_cti.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoCTIcampinas.jpeg")))
         self.logo_cti.setScaledContents(True)
         self.logo_cti.setObjectName(_fromUtf8("logo_cti"))
-        self.gridAvisos.addWidget(self.logo_cti, 3, 1, 1, 1)
+        self.gridAvisos.addWidget(self.logo_cti, 3, 2, 1, 1)
               
         self.logo_icmc = QtGui.QLabel(self.Avisos)
         self.logo_icmc.setMaximumSize(100,60)            
@@ -249,7 +255,7 @@ class Ui_MainWindow(object):
         self.logo_icmc.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoICMC.png")))
         self.logo_icmc.setScaledContents(True)
         self.logo_icmc.setObjectName(_fromUtf8("logo_icmc"))
-        self.gridAvisos.addWidget(self.logo_icmc, 3, 2, 1, 1)
+        self.gridAvisos.addWidget(self.logo_icmc, 3, 3, 1, 1)
         
         self.logo_lar = QtGui.QLabel(self.Avisos)
         self.logo_lar.setMaximumSize(100,60)        
@@ -257,18 +263,9 @@ class Ui_MainWindow(object):
         self.logo_lar.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoLars.png")))
         self.logo_lar.setScaledContents(True)
         self.logo_lar.setObjectName(_fromUtf8("logo_lar"))
-        self.gridAvisos.addWidget(self.logo_lar, 3, 3, 1, 1)
+        self.gridAvisos.addWidget(self.logo_lar, 3, 4, 1, 1)
         
-        # self.logo_Unesp = QtGui.QLabel(self.Avisos)
-        # # self.logo_Unesp.resize(100,60)
-        # self.logo_Unesp.setMaximumSize(100,60)              
-        # self.logo_Unesp.setText(_fromUtf8(""))
-        # self.logo_Unesp.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/unesp-full-center.png")))
-        # self.logo_Unesp.setScaledContents(True)
-        # self.logo_Unesp.setObjectName(_fromUtf8("logo_Unesp"))
-        # self.gridAvisos.addWidget(self.logo_Unesp, 3, 5, 1, 1)
-        
-       #Gravação
+       #sessão
         self.groupBox = QtGui.QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
     
@@ -376,8 +373,8 @@ class Ui_MainWindow(object):
         self.btnGB1x1.setText(_translate("MainWindow", "Iniciar Vida", None))
         self.btnGB2x1.setText(_translate("MainWindow", "Encerrar Vida", None))
         self.BtnNaoView.setText(_translate("MainWindow", "Câmera NAO", None))
-        self.btnGB3x1.setText(_translate("MainWindow","Girar para esquerda",None))
-        self.btnGB4x1.setText(_translate("MainWindow","Girar para direita",None))
+        self.btnGB3x1.setText(_translate("MainWindow","Virar para esquerda",None))
+        self.btnGB4x1.setText(_translate("MainWindow","Virar para direita",None))
         #Movimentos
         self.Movimentos.setTitle(_translate("MainWindow", "Movimentos", None))
         self.btn1x1.setText(_translate("MainWindow", "Concordar", None))
@@ -867,19 +864,3 @@ class Ui_MainWindow(object):
             self.motion.post.moveInit()
             self.motion.post.moveTo(0,0,-0.1)
     
-
-
-# import sys
-
-# class interface(QtGui.QMainWindow,Ui_MainWindow):
-#     def __init__(self):
-#         QtGui.QMainWindow.__init__(self)
-#         Ui_MainWindow.__init__(self)
-#         self.setupUi(self)
-        
-
-# if __name__ == "__main__":
-#     app = QtGui.QApplication(sys.argv)
-#     window = interface()
-#     window.show()
-#     sys.exit(app.exec_())
