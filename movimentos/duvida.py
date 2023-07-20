@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def Duvida():
     names = list()
     times = list()
@@ -12,7 +13,7 @@ def Duvida():
     keys.append([-0.799361, -0.860982, -1.74092])
 
     names.append("LHand")
-    times.append([0.4, 0.8, 1.04, 5.52])
+    times.append([0.4, 0.8, 1.04, 3.0])
     keys.append([0.29, 0.29, 0.29, 0.29])
 
     names.append("LShoulderPitch")
@@ -36,7 +37,7 @@ def Duvida():
     keys.append([0.799361, 0.860982, 1.74092])
 
     names.append("RHand")
-    times.append([0.4, 0.8, 1.04, 5.52])
+    times.append([0.4, 0.8, 1.04, 3.0])
     keys.append([0.29, 0.29, 0.29, 0.29])
 
     names.append("RShoulderPitch")
@@ -51,4 +52,4 @@ def Duvida():
     times.append([0.4, 0.8, 1.04])
     keys.append([1.44862, 1.44303, 1.44303])
 
-    return names,times,keys
+    return names,times,keys,"Dúvida"

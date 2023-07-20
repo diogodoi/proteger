@@ -52,4 +52,4 @@ def conversar():
     times.append([0.666667, 1, 1.33333, 1.66667, 2, 2.33333, 2.66667, 3])
     keys.append([0.951039, 0.951039, 0.951039, 0.951039, 0.951039, 0.951039, 0.951039, 0.951039])
 
-    return names,times,keys
+    return names,times,keys,"Conversar"
