@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QTableWidgetItem, QWidget, QImage, QApplication, QPainter,QFileDialog, QDialog,QWidget,QTableView
-from PyQt4.QtCore import QTimer, QBasicTimer, QObject, Qt,QThread, pyqtSignal
+from PyQt4.QtCore import Qt
 from naoqi import ALProxy
-from movimentos import beijos,comemorar,concordar,nossa,duvida,discordar,empatia,palmas,tchau,toca_aqui
+from movimentos import acenar, beijos,comemorar,concordar,nossa,duvida,discordar, respiracao,standard,palmas,toca_aqui,receberItem,pegaItem,brincadeira_1,brincadeira_2
 from designSobre import Ui_Sobre
 import sqlite3
 import time
@@ -25,20 +24,21 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 
-
-#Abre Banco de dados e adiciona os valores no completer, e pega o ultimo valor de IP inserido.
+# Conecta ao banco de dados
 conn = sqlite3.connect('BdProteger.db')
 cursor = conn.cursor()
-cursor.execute("SELECT * FROM IpRobot ORDER BY id DESC;")
-listaIp = cursor.fetchall()
-lista_ip = []
-for i,j in listaIp:
-    lista_ip.append(j)
-cursor.execute("SELECT * FROM IpRobot ORDER BY id DESC LIMIT 1")
-lastIp = cursor.fetchall()
-for i,j in lastIp:
-    last_ip = str(j)     
+
+# Obtém todos os registros da tabela IpRobot
+cursor.execute("SELECT IpRobot FROM IpRobot ORDER BY id DESC;")
+lista_ip = [registro[0] for registro in cursor.fetchall()]
+
+# Obtém o último registro da tabela IpRobot
+cursor.execute("SELECT IpRobot FROM IpRobot ORDER BY id DESC LIMIT 1")
+last_ip = str(cursor.fetchone()[0])
+
+# Fecha a conexão com o banco de dados
 conn.close()
+
 
 iprobo = ""
 jan = None
@@ -46,22 +46,20 @@ jan = None
 class Ui_MainWindow(object):
     def __init__(self):
         self.val_ip = ""
-        self.aux = False        
-        self.AuxLeds = False        
         self.robotIP = ""
         self.PORT = 9559
         
     def setupUi(self, MainWindow):
-        MainWindow.setObjectName(_fromUtf8("MainWindow"))        
-        
+        MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.setMinimumSize(QtCore.QSize(840, 840))
-        
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/02.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet("""
-                                 font:16px;                     
-                          """)
+                                 QPushButton{
+                                     font-size:24px;
+                                 };
+                                 background-color:#F5F5F5;font:16px;""")               
 
         self.centralwidget = QtGui.QWidget(MainWindow)        
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
@@ -80,8 +78,7 @@ class Ui_MainWindow(object):
         self.actionSobre = QtGui.QAction(MainWindow)
         self.actionSobre.setObjectName(_fromUtf8("actionSobre"))
         self.menuMenu.addAction(self.actionSobre)
-        self.menubar.addAction(self.menuMenu.menuAction())
-        
+        self.menubar.addAction(self.menuMenu.menuAction())        
         self.actionSobre.triggered.connect(self.openSobre)
         
         
@@ -92,154 +89,123 @@ class Ui_MainWindow(object):
 
         self.gridMenu = QtGui.QGridLayout(self.Menu)
         self.gridMenu.setObjectName(_fromUtf8("gridMenu"))
-        self.Menu.setMinimumSize(200,200)
-        self.Menu.setMaximumSize(500,500)
         
         self.label_Ip = QtGui.QLabel(self.Menu)        
         self.label_Ip.setObjectName(_fromUtf8("label_Ip"))
-
         self.gridMenu.addWidget(self.label_Ip, 0, 1, 1, 1)        
       
         self.inputIP = QtGui.QLineEdit(self.Menu)                        
         self.inputIP.setObjectName(_fromUtf8("inputIP"))
-        self.gridMenu.addWidget(self.inputIP, 0, 2, 1, 1)       
+        self.gridMenu.addWidget(self.inputIP, 0, 2, 1, 1)  
+        
+        self.label_Status = QtGui.QLabel(self.Menu)
+        self.label_Status.setObjectName(_fromUtf8("label_status"))
+        self.gridMenu.addWidget(self.label_Status,1,1,1,1)
+        
+        self.label_BarStatus = QtGui.QLabel(self.Menu)
+        self.label_BarStatus.setObjectName(_fromUtf8("label_status"))
+        self.label_BarStatus.setText("")
+        self.label_BarStatus.setStyleSheet("background-color:gray;")
+        self.label_BarStatus.setMaximumHeight(30)
+        self.gridMenu.addWidget(self.label_BarStatus,1,2,1,1)
+        
               
         self.BtnConn = QtGui.QPushButton(self.Menu)               
         self.BtnConn.setObjectName(_fromUtf8("BtnConn"))
         self.BtnConn.setToolTip(_fromUtf8("Faz a conexão com o robô."))
-
-        self.gridMenu.addWidget(self.BtnConn, 1, 2, 1, 1)
-        
-        self.BtnNaoView = QtGui.QPushButton(self.Menu)        
-        self.BtnNaoView.setObjectName(_fromUtf8("BtnNaoView"))
-        self.BtnNaoView.setEnabled(False)
-        self.BtnNaoView.setToolTip(_fromUtf8("Faz a captura do vídeo do robô."))
-
-        self.gridMenu.addWidget(self.BtnNaoView, 2, 2, 1, 1)
-       
-        self.BtnEnc = QtGui.QPushButton(self.Menu)        
-        self.BtnEnc.setObjectName(_fromUtf8("BtnEnc"))
-        self.BtnEnc.setEnabled(False)
-        self.BtnEnc.setToolTip(_fromUtf8("Encerra a conexão com o robô."))
-
-        self.gridMenu.addWidget(self.BtnEnc, 3, 2, 1, 1)
-        
+        self.gridMenu.addWidget(self.BtnConn, 2, 1, 1, 2)
 
         #### BOX MOVIMENTOS
         self.Movimentos = QtGui.QGroupBox(self.centralwidget)        
         self.Movimentos.setObjectName(_fromUtf8("Movimentos"))
         
-        self.Movimentos.setMinimumWidth(450)
-        self.Movimentos.setMaximumWidth(800)
         
         self.gridLayout_2 = QtGui.QGridLayout(self.Movimentos)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
         
         self.btn1x1 = QtGui.QPushButton(self.Movimentos)
         self.btn1x1.setObjectName(_fromUtf8("btn1x1"))
-        self.gridLayout_2.addWidget(self.btn1x1, 0, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.btn1x1, 1, 1, 1, 1)
         self.btn1x1.setToolTip(_fromUtf8("Movimento a cabeça para baixo e para cima."))
         
         self.btn1x2 = QtGui.QPushButton(self.Movimentos)
         self.btn1x2.setObjectName(_fromUtf8("btn1x2"))
-        self.gridLayout_2.addWidget(self.btn1x2, 0, 6, 1, 1)
+        self.gridLayout_2.addWidget(self.btn1x2, 1, 2, 1, 1)
         self.btn1x2.setToolTip(_fromUtf8("Movimenta a cabeça para os lados."))
                         
         self.btn1x3 = QtGui.QPushButton(self.Movimentos)
         self.btn1x3.setObjectName(_fromUtf8("btn1x3"))
-        self.gridLayout_2.addWidget(self.btn1x3, 0, 8, 1, 1)
+        self.gridLayout_2.addWidget(self.btn1x3, 1, 3, 1, 1)
         self.btn1x3.setToolTip(_fromUtf8("Levanta a mão em direção a testa."))
         
         self.btn2x1 = QtGui.QPushButton(self.Movimentos)
         self.btn2x1.setObjectName(_fromUtf8("btn2x1"))
-        self.gridLayout_2.addWidget(self.btn2x1, 1, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.btn2x1, 2, 1, 1, 1)
         self.btn2x1.setToolTip(_fromUtf8("Faz uma dança de comemoração."))
         
         self.btn2x2 = QtGui.QPushButton(self.Movimentos)
         self.btn2x2.setObjectName(_fromUtf8("btn2x2"))
-        self.gridLayout_2.addWidget(self.btn2x2, 1, 6, 1, 1)
-        self.btn2x2.setToolTip(_fromUtf8("Movimenta a cabeça bem devagar para baixo.") )     
+        self.gridLayout_2.addWidget(self.btn2x2, 2, 2, 1, 1)
+        self.btn2x2.setToolTip(_fromUtf8("Esconde o rosto com as mãos.") )     
         
         self.btn2x3 = QtGui.QPushButton(self.Movimentos)
         self.btn2x3.setObjectName(_fromUtf8("btn2x3"))
-        self.gridLayout_2.addWidget(self.btn2x3, 1, 8, 1, 1)
+        self.gridLayout_2.addWidget(self.btn2x3, 2, 3, 1, 1)
         self.btn2x3.setToolTip(_fromUtf8("Abre os braços em uma posição receptiva."))
                 
         self.btn3x1 = QtGui.QPushButton(self.Movimentos)
         self.btn3x1.setObjectName(_fromUtf8("btn3x1"))
-        self.gridLayout_2.addWidget(self.btn3x1, 2, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.btn3x1, 3, 1, 1, 1)
         self.btn3x1.setToolTip(_fromUtf8("Faz o robô sentar/levantar"))
         
         self.btn3x2 = QtGui.QPushButton(self.Movimentos)
         self.btn3x2.setObjectName(_fromUtf8("btn3x2"))
-        self.gridLayout_2.addWidget(self.btn3x2, 2, 6, 1, 1)
+        self.gridLayout_2.addWidget(self.btn3x2, 3, 2, 1, 1)
         self.btn3x2.setToolTip(_fromUtf8("Faz o robô bater palmas."))
                 
         self.btn3x3 = QtGui.QPushButton(self.Movimentos)
         self.btn3x3.setObjectName(_fromUtf8("btn3x3"))
-        self.gridLayout_2.addWidget(self.btn3x3, 2, 8, 1, 1)
-        self.btn3x3.setToolTip(_fromUtf8("O robô levanta a mão para cumprimentar."))
-        
+        self.gridLayout_2.addWidget(self.btn3x3, 3, 3, 1, 1)
+        self.btn3x3.setToolTip(_fromUtf8("O robô levanta a mão para cumprimentar."))       
         
         
         self.btn4x1 = QtGui.QPushButton(self.Movimentos)
         self.btn4x1.setObjectName(_fromUtf8("btn4x1"))
-        self.gridLayout_2.addWidget(self.btn4x1, 3, 3, 1, 1)
+        self.gridLayout_2.addWidget(self.btn4x1, 4, 1, 1, 1)
         self.btn4x1.setToolTip(_fromUtf8("O robô acena."))
         
         self.btn4x2 = QtGui.QPushButton(self.Movimentos)
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
-        self.gridLayout_2.addWidget(self.btn4x2, 3, 6, 1, 1)
+        self.gridLayout_2.addWidget(self.btn4x2, 4, 2, 1, 1)
         self.btn4x2.setToolTip(_fromUtf8("O robô envia um beijo."))
         
-        self.btn1x1.setEnabled(False)
-        self.btn2x1.setEnabled(False)
-        self.btn3x1.setEnabled(False)
-        self.btn1x2.setEnabled(False)
-        self.btn2x2.setEnabled(False)
-        self.btn3x2.setEnabled(False)
-        self.btn1x3.setEnabled(False)
-        self.btn2x3.setEnabled(False)
-        self.btn3x3.setEnabled(False)
-        self.btn4x1.setEnabled(False)
-        self.btn4x2.setEnabled(False)
+        
+        self.btn4x3 = QtGui.QPushButton(self.Movimentos)
+        self.btn4x3.setObjectName(_fromUtf8("btn4x3"))        
+        self.gridLayout_2.addWidget(self.btn4x3, 4, 3, 1, 1)
+        
+        self.btn5x1 = QtGui.QPushButton(self.Movimentos)
+        self.btn5x1.setObjectName(_fromUtf8("btn5x1"))
+        self.gridLayout_2.addWidget(self.btn5x1,5,1,1,1)
+        self.btn5x1.setText(_fromUtf8("Respiração")) 
+        
+        self.Movimentos.setEnabled(False)
+        
+    
         
         ##AREA DE AVISOS
         self.Avisos = QtGui.QGroupBox(self.centralwidget)
         self.Avisos.setObjectName(_fromUtf8("Avisos"))
-        self.Avisos.setMinimumHeight(300)
-        self.Avisos.setMinimumWidth(300)
+
 
         self.gridAvisos = QtGui.QGridLayout(self.Avisos)
         self.gridAvisos.setObjectName(_fromUtf8("gridAvisos"))
         
         self.label_avisos = QtGui.QLabel(self.Avisos)
         self.label_avisos.setObjectName(_fromUtf8("Avisos"))        
-        self.label_avisos.setStyleSheet("border:none")
         self.label_avisos.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.gridAvisos.addWidget(self.label_avisos, 0, 3, 1, 1)  
-  
-        self.tableWidget = QtGui.QTableWidget(self.Avisos)
-        self.tableWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.tableWidget.setTabKeyNavigation(False)
-        self.tableWidget.setProperty("showDropIndicator", False)
-        self.tableWidget.setDragDropOverwriteMode(False)
-        self.tableWidget.setAlternatingRowColors(False)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.NoSelection)
-        self.tableWidget.setRowCount(5)
-        self.tableWidget.setObjectName(_fromUtf8("tableWidget"))
-        self.tableWidget.setColumnCount(2)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(0, item)
-        item = QtGui.QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(1, item)
-        self.tableWidget.horizontalHeader().setMinimumSectionSize(70)
-        self.tableWidget.horizontalHeader().setStretchLastSection(True)
-        self.tableWidget.verticalHeader().setVisible(False)
-        self.tableWidget.verticalHeader().setHighlightSections(False)
-        self.tableWidget.setStyleSheet("font:12px;text-decoration: none;color:black;")
-        self.gridAvisos.addWidget(self.tableWidget, 1, 1, 2, 5)
+        self.label_avisos.setStyleSheet(_fromUtf8("font-size:30px;"))
+        self.gridAvisos.addWidget(self.label_avisos, 0, 1, 1, 5)        
       
         self.logo_cti = QtGui.QLabel(self.Avisos)
         self.logo_cti.setMaximumSize(100,60) 
@@ -247,7 +213,7 @@ class Ui_MainWindow(object):
         self.logo_cti.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoCTIcampinas.jpeg")))
         self.logo_cti.setScaledContents(True)
         self.logo_cti.setObjectName(_fromUtf8("logo_cti"))
-        self.gridAvisos.addWidget(self.logo_cti, 3, 2, 1, 1)
+        self.gridAvisos.addWidget(self.logo_cti, 2, 2, 1, 1)
               
         self.logo_icmc = QtGui.QLabel(self.Avisos)
         self.logo_icmc.setMaximumSize(100,60)            
@@ -255,7 +221,7 @@ class Ui_MainWindow(object):
         self.logo_icmc.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoICMC.png")))
         self.logo_icmc.setScaledContents(True)
         self.logo_icmc.setObjectName(_fromUtf8("logo_icmc"))
-        self.gridAvisos.addWidget(self.logo_icmc, 3, 3, 1, 1)
+        self.gridAvisos.addWidget(self.logo_icmc, 2, 3, 1, 1)
         
         self.logo_lar = QtGui.QLabel(self.Avisos)
         self.logo_lar.setMaximumSize(100,60)        
@@ -263,79 +229,82 @@ class Ui_MainWindow(object):
         self.logo_lar.setPixmap(QtGui.QPixmap(_fromUtf8("imagens/LogoLars.png")))
         self.logo_lar.setScaledContents(True)
         self.logo_lar.setObjectName(_fromUtf8("logo_lar"))
-        self.gridAvisos.addWidget(self.logo_lar, 3, 4, 1, 1)
+        self.gridAvisos.addWidget(self.logo_lar, 2, 4, 1, 1)
         
        #sessão
-        self.groupBox = QtGui.QGroupBox(self.centralwidget)
-        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.sessionBox = QtGui.QGroupBox(self.centralwidget)
+        self.sessionBox.setObjectName(_fromUtf8("sessionBox"))
     
-        self.gridLayout_GB = QtGui.QGridLayout(self.groupBox)
-        self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))        
+        self.gridLayout_GB = QtGui.QGridLayout(self.sessionBox)
+        self.gridLayout_GB.setObjectName(_fromUtf8("gridLayout_GB"))       
         
-        self.groupBox.setMinimumSize(200,200)
-        self.groupBox.setMaximumSize(500,500)        
+        self.btnLife = QtGui.QPushButton(self.sessionBox)
+        self.btnLife.setObjectName(_fromUtf8("btnLife"))
+        self.btnLife.setIcon(QtGui.QIcon('imagens/icons/face_tracker.png'))        
+        self.gridLayout_GB.addWidget(self.btnLife, 1, 1, 1, 3)
         
-        self.btnGB1x1 = QtGui.QPushButton(self.groupBox)
-        self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))
-        self.btnGB1x1.setEnabled(False)
+        self.label_olhar = QtGui.QLabel(self.sessionBox)
+        self.label_olhar.setObjectName(_fromUtf8("labelGirar"))
+        self.label_olhar.setText(_fromUtf8("Olhar para"))
+        self.label_olhar.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.label_olhar.setStyleSheet("font:24px;")
+        self.gridLayout_GB.addWidget(self.label_olhar, 2, 1, 1, 3)
         
-        self.gridLayout_GB.addWidget(self.btnGB1x1, 1, 1, 1, 2)
+        self.btnGB1x1 = QtGui.QPushButton(self.sessionBox)
+        self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))        
+        self.gridLayout_GB.addWidget(self.btnGB1x1, 3, 2, 1, 1)
+        self.btnGB1x1.setText("Cima")
         
-        self.btnGB2x1 = QtGui.QPushButton(self.groupBox)
-        self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))
-        self.btnGB2x1.setEnabled(False)
-        self.gridLayout_GB.addWidget(self.btnGB2x1, 2, 1, 1, 2)
+        self.btnGB2x1 = QtGui.QPushButton(self.sessionBox)
+        self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))        
+        self.gridLayout_GB.addWidget(self.btnGB2x1, 4, 1, 1, 1)
+        self.btnGB2x1.setText("Esquerda")
         
-        self.btnGB3x1 = QtGui.QPushButton(self.groupBox)
-        self.btnGB3x1.setObjectName(_fromUtf8("btnGB2x1"))
+        self.btnGB3x1 = QtGui.QPushButton(self.sessionBox)
+        self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))        
+        self.gridLayout_GB.addWidget(self.btnGB3x1, 4, 3, 1, 1)
+        self.btnGB3x1.setText("Direita")
         
-        self.gridLayout_GB.addWidget(self.btnGB3x1, 3, 1, 1, 1)
+        self.btnGB4x1 = QtGui.QPushButton(self.sessionBox)
+        self.btnGB4x1.setObjectName(_fromUtf8("btnGB4x1"))        
+        self.gridLayout_GB.addWidget(self.btnGB4x1, 5, 2, 1, 1)
+        self.btnGB4x1.setText("Baixo")
         
-        self.btnGB4x1 = QtGui.QPushButton(self.groupBox)
-        self.btnGB4x1.setObjectName(_fromUtf8("btnGB2x1"))
-        
-        self.gridLayout_GB.addWidget(self.btnGB4x1, 3, 2, 1, 1)
-        self.btnGB3x1.setEnabled(False)
-        self.btnGB4x1.setEnabled(False)       
+        self.sessionBox.setEnabled(False)   
                 
         ### BOTAO EMERGENCIA
-        self.EMG = QtGui.QPushButton(self.centralwidget)
-        self.EMG.setStyleSheet(_fromUtf8("color: rgb(255, 255, 0);\n""background-color: rgb(255, 0, 0)"))
-        self.EMG.setObjectName(_fromUtf8("EMG"))
+        self.btnRest = QtGui.QPushButton(self.centralwidget)
+        self.btnRest.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(0, 255, 0);font-weight:75;font-style:bold;")
+        self.btnRest.setObjectName(_fromUtf8("Descansar"))
         MainWindow.setCentralWidget(self.centralwidget)        
-        font = QtGui.QFont()
-        font.setBold(True)
-        font.setWeight(75)
-        self.EMG.setFont(font)
-        self.EMG.setMinimumHeight(50)
+        self.btnRest.setMinimumHeight(50)
         
         
         #Botões Configurações
-        self.BtnConn.clicked.connect(self.conexao)
-        self.BtnNaoView.clicked.connect(self.retrivingImage)
-        self.BtnEnc.clicked.connect(self.desconectar)
+        self.BtnConn.clicked.connect(self.fazerConexao)
+        self.btnLife.clicked.connect(self.ligaDesligaEngajamento)
+
 
         #Botões Movimentos
         self.btn1x1.clicked.connect(self.concordar)
         self.btn1x2.clicked.connect(self.discordar)
         self.btn1x3.clicked.connect(self.nossa)
         self.btn2x1.clicked.connect(self.comemorar)
-        self.btn2x2.clicked.connect(self.empatia)
+        self.btn2x2.clicked.connect(self.esconderRosto)
         self.btn2x3.clicked.connect(self.duvida)
         self.btn3x1.clicked.connect(self.funcSentarLevantar)
         self.btn3x2.clicked.connect(self.palmas)
         self.btn3x3.clicked.connect(self.tocaqui)
-        self.btn4x1.clicked.connect(self.tchau)
+        self.btn4x1.clicked.connect(self.acenar)
         self.btn4x2.clicked.connect(self.beijos)
-        #Botão Emergência
-        self.EMG.clicked.connect(self.desligar)
+        self.btn4x3.clicked.connect(self.receberItem)
+        self.btn5x1.clicked.connect(self.respirar)
+        self.btnRest.clicked.connect(self.descansar)
         
         #Botões Sessão
-        self.btnGB1x1.clicked.connect(self.startNaoRecording)        
-        self.btnGB2x1.clicked.connect(self.stopNaoRecording)
-        self.btnGB3x1.clicked.connect(self.virarEsquerda)
-        self.btnGB4x1.clicked.connect(self.virarDireita)
-
+        self.btnGB1x1.clicked.connect(self.moveHeadUp)
+        self.btnGB2x1.clicked.connect(self.moveHeadLeft)
+        self.btnGB3x1.clicked.connect(self.moveHeadRight)
         
         #Recupera o ultimo ip adicionado na lista.
         self.inputIP.setText(last_ip)
@@ -346,10 +315,10 @@ class Ui_MainWindow(object):
  
         #Posições das box em grid
         self.gridMain.addWidget(self.Menu, 1, 1, 1, 1)
-        self.gridMain.addWidget(self.groupBox,2,1,1,1)
-        self.gridMain.addWidget(self.Movimentos, 1, 2, 2, 1)
-        self.gridMain.addWidget(self.EMG, 3, 1, 1, 2)        
-        self.gridMain.addWidget(self.Avisos, 4, 1, 1, 2)                        
+        self.gridMain.addWidget(self.sessionBox,2,1,1,1)
+        self.gridMain.addWidget(self.Movimentos, 1, 2, 2, 2)
+        self.gridMain.addWidget(self.btnRest, 3, 1, 1, 3)        
+        self.gridMain.addWidget(self.Avisos, 4, 1, 1, 3)                        
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)    
@@ -363,37 +332,30 @@ class Ui_MainWindow(object):
         self.Menu.setTitle(_translate("MainWindow", "Configurações", None))
         self.label_Ip.setText(_translate("MainWindow", "IP Robô", None))
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
-        self.BtnEnc.setText(_translate("MainWindow", "Desconectar", None))
+        self.label_Status.setText(_translate("MainWindow","Status:",None))
         
         #Avisos
-        self.label_avisos.setText(_translate("MainWindow", "Avisos", None))
+        self.label_avisos.setText(_translate("MainWindow", "Bem vindo a GUIPsyin! \n Para iniciar insira o ip do robô em configurações.", None))
+        
         
         #Gravação
-        self.groupBox.setTitle(_translate("ChatWindow", "Sessão", None))
-        self.btnGB1x1.setText(_translate("MainWindow", "Iniciar Vida", None))
-        self.btnGB2x1.setText(_translate("MainWindow", "Encerrar Vida", None))
-        self.BtnNaoView.setText(_translate("MainWindow", "Câmera NAO", None))
-        self.btnGB3x1.setText(_translate("MainWindow","Virar para esquerda",None))
-        self.btnGB4x1.setText(_translate("MainWindow","Virar para direita",None))
+        self.sessionBox.setTitle(_translate("ChatWindow", "Sessão", None))
+        self.btnLife.setText(_translate("MainWindow", "Iniciar vida", None))
         #Movimentos
         self.Movimentos.setTitle(_translate("MainWindow", "Movimentos", None))
         self.btn1x1.setText(_translate("MainWindow", "Concordar", None))
         self.btn1x2.setText(_translate("MainWindow", "Discordar", None))
-        self.btn2x2.setText(_translate("MainWindow", "Empatia", None))
+        self.btn2x2.setText(_translate("MainWindow", "Esconder", None))
         self.btn2x1.setText(_translate("MainWindow", "Comemorar", None))
         self.btn1x3.setText(_translate("MainWindow", "Nossa", None))
         self.btn3x3.setText(_translate("MainWindow", "Toca aqui", None))
         self.btn2x3.setText(_translate("MainWindow", "Duvida", None))
         self.btn3x2.setText(_translate("MainWindow", "Palmas", None))
         self.btn3x1.setText(_translate("MainWindow", "Sentar", None))
-        self.btn4x1.setText(_translate("MainWindow", "Oi/Tchau", None))
+        self.btn4x1.setText(_translate("MainWindow", "Acenar", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
-        
-        item = self.tableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "Hora", None))
-        item = self.tableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("MainWindow", "Mensagens", None))
-        self.EMG.setText(_translate("MainWindow", "DESLIGAR/EMERGÊNCIA", None))        
+        self.btn4x3.setText(_translate("MainWindow", "Receber",None))        
+        self.btnRest.setText(_translate("MainWindow", "DESCANSAR", None))        
     
     def openSobre(self):
         self.windowSobre = QtGui.QWidget()
@@ -411,83 +373,74 @@ class Ui_MainWindow(object):
         conn.commit()
         conn.close()
     
-    def conexao(self): 
+    def conexao(self):
         try:
             self.robotIP = self.setIP()
             self.motion = ALProxy("ALMotion", self.robotIP, self.PORT)
-            self.posture = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
-            self.tracker = ALProxy("ALTracker", self.robotIP, self.PORT)
-            aviso = "AVISO: Conexão com "+self.robotIP+" estabelecida." 
-            self.enviarAviso(aviso)
         except BaseException:
-            aviso = "ERROR: Falha na conexão com "+ self.robotIP +"."
-            self.enviarAviso(aviso)
-            return
+            aviso = "ERROR: Falha na conexão com "+ self.robotIP +"."            
+            return False , aviso
         try:
-            self.basic_awareness = ALProxy("ALBasicAwareness", self.robotIP, self.PORT)
+            self.tracker = ALProxy("ALTracker", self.robotIP, self.PORT)
         except BaseException:
             aviso = "ERROR: Falha na configuração da detecção de Face."
-            self.enviarAviso(aviso)
-            return        
+            return False, aviso
+        try:
+            self.leds = ALProxy("ALLeds", self.robotIP, self.PORT)
+        except BaseException:
+            aviso = "Error: Falha na configuração dos leds."
+            return False, aviso
+        try:
+            self.posture = ALProxy("ALRobotPosture", self.robotIP, self.PORT)
+        except BaseException:
+            aviso = "Error: Falha na configuração dos motores."
+            return False, aviso
         try:    
             self.salva_ip()
-            self.BtnConn.setText("Conectado")            
-            self.BtnConn.setEnabled(False)
-            self.BtnEnc.setEnabled(True)
-            self.BtnNaoView.setEnabled(True)
-            self.btnGB1x1.setEnabled(True)
-            self.BtnConn.setStyleSheet("background-color:#40FF00;") 
+            self.buttonsOn()
         except BaseException:
             aviso = "ERROR: Falha na configuração."
             self.enviarAviso(aviso)
-            return
+            return False, aviso
+        aviso = "AVISO: Conexão com "+self.robotIP+" estabelecida." 
+        return True , aviso
 
+    def buttonsOn(self):
+        self.BtnConn.setText("Desconectar")
+        self.inputIP.setEnabled(False)
+        self.btnLife.setEnabled(True)
+        self.Movimentos.setEnabled(True)
+        self.sessionBox.setEnabled(True)
+        self.ledsOn()
+        
     def buttonsOff(self):
-        self.BtnConn.setEnabled(True)
         self.BtnConn.setText("Conectar")
-        self.BtnConn.setStyleSheet("background:#e1e1e1;")
-        self.BtnEnc.setEnabled(False)
-        self.BtnNaoView.setText(_fromUtf8("Câmera NAO"))
-        self.BtnNaoView.setStyleSheet("background:#e1e1e1;")
-        self.BtnNaoView.setEnabled(False)
+        self.btnLife.setText("Iniciar vida")
+        self.inputIP.setEnabled(True)
+        self.btnLife.setEnabled(False)        
+        self.Movimentos.setEnabled(False)        
+        self.sessionBox.setEnabled(False)
+        self.ledsOff()
         
-        #Movimentos
-        self.btn1x1.setEnabled(False)
-        self.btn2x1.setEnabled(False)
-        self.btn3x1.setEnabled(False)
-        self.btn1x2.setEnabled(False)
-        self.btn2x2.setEnabled(False)
-        self.btn3x2.setEnabled(False)
-        self.btn1x3.setEnabled(False)
-        self.btn2x3.setEnabled(False)
-        self.btn3x3.setEnabled(False)
-        self.btn4x1.setEnabled(False)
-        self.btn4x2.setEnabled(False)
-        
-        #sessão            
-        self.btnGB1x1.setText("Iniciar Vida")
-        self.btnGB1x1.setStyleSheet("background:#e1e1e1;")
-        self.btnGB1x1.setEnabled(False)
-        self.btnGB2x1.setEnabled(False)
-        self.btnGB3x1.setEnabled(False)
-        self.btnGB4x1.setEnabled(False)
-        return
     def desconectar(self):
         try:
-            self.TMf.stop()
+            self.cameraWindow.close()
+            self.cameraWindow = None
         except:
-            pass
+            aviso = "Error: Falha ao encerrar a conexão de video."
+            self.enviarAviso(aviso)
+            return
         try:
             self.salva_log()
         except BaseException:
             aviso = "ERROR:Falha ao salvar log."
             self.enviarAviso(aviso)
             return 
-        try:           
-            self.robotIP = ""
+        try:
+            self.motion.rest()
             self.buttonsOff()
-            self.cameraWindow.close()
-            self.cameraWindow = None
+            self.robotIP = ""
+            self.inputIP.setEnabled(True)
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
@@ -495,7 +448,37 @@ class Ui_MainWindow(object):
             self.enviarAviso(aviso)
             return            
     
+    def fazerConexao(self):
+        self.value = str(self.BtnConn.text())
+        if self.value == "Conectar":
+            self.conn , aviso = self.conexao()
+            if self.conn:                
+                self.retrivingImage()
+                self.enviarAviso(aviso)
+                self.label_BarStatus.setStyleSheet("background-color:rgb(0,255,0);")
+                self.label_BarStatus.setText("CONECTADO!")
+                self.BtnConn.setText("Desconectar")
+                # self.motion.setStiffnesses("Body",1.0)
+                self.motion.setSmartStiffnessEnabled(True)
+                self.posture.post.goToPosture("Stand",0.5)
+                # self.motion.setBreathEnabled("Legs",True)
+            else:
+                self.enviarAviso(aviso)
+
+        else:
+            self.desconectar()
+            self.label_BarStatus.setStyleSheet("background-color:gray;")
+            self.label_BarStatus.setText("")
+            
     def enviarAviso(self,aviso):
+        if 'ERROR' in aviso:
+            self.label_avisos.setStyleSheet("background-color:rgb(255,0,0);font-size:32px;")
+            self.label_BarStatus.setStyleSheet("background-color:rgb(255,255,0);")
+            self.label_BarStatus.setText(_fromUtf8("Falha na conexão!"))            
+            self.buttonsOff()  
+        else:
+            self.label_avisos.setStyleSheet("background-color:rgb(0,255,0);font-size:32px;")      
+        self.label_avisos.setText(_fromUtf8(aviso))        
         conn = sqlite3.connect('BdProteger.db')
         conn.text_factory = str
         self.aviso = aviso
@@ -504,17 +487,6 @@ class Ui_MainWindow(object):
         hora = str(t.tm_hour) + ":" + str(t.tm_min) + ":" + str(t.tm_sec)
         conn.execute("INSERT INTO Sessao (Data,Hora,Aviso) VALUES(?,?,?);",(Data,hora,self.aviso))
         conn.commit()
-        
-        # conn = sqlite3.connect('BdProteger.db')
-        query ="SELECT Hora, Aviso FROM Sessao ORDER BY ip DESC LIMIT 1"                
-        result = conn.execute(query)
-        for row, row_data in enumerate(result):
-            self.tableWidget.insertRow(row)
-            for col, data in enumerate(row_data):
-                self.tableWidget.setItem(row,col, QTableWidgetItem(_fromUtf8(data) ))
-        self.tableWidget.show()
-        conn.close()
-        return
     
     def setIP(self):
             self.val_ip = str(self.inputIP.text())
@@ -552,140 +524,74 @@ class Ui_MainWindow(object):
         self.tracker.track(targetName)
         
     #Funções dos botões
-    def desligar(self):
+    def descansar(self,breath=True):
         try:
-            if (self.BtnConn.text() == "Conectar"):
-                return
-            else:
-                try:          
-                    system = ALProxy("ALSystem", self.robotIP, 9559)
-                    self.cameraWindow.close()
-                    self.cameraWindow = None    
-                    self.motion.post.rest()
-                except:
-                    pass
-                
-                system.post.shutdown()
-                aviso = "AVISO: Fim da conexão com o robô."
-                self.enviarAviso(aviso)
-                self.buttonsOff()
+            names,times,keys, _ = standard.RestPosition()
+            self.motion.post.angleInterpolation(names,keys,times, True) 
+            self.motion.setBreathEnabled('Legs',breath)
+            aviso = "AVISO: Comando Descansar enviado com sucesso."
+            self.enviarAviso(aviso) 
                 
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
             self.enviarAviso(aviso)
             
     def ledsOff(self):
-        self.motion.post.rest() 
-        leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
         name = "AllLeds"        
-        leds.post.off(name)
-        self.btn1x1.setEnabled(False)
-        self.btn2x1.setEnabled(False)
-        self.btn3x1.setEnabled(False)
-        self.btn1x2.setEnabled(False)
-        self.btn2x2.setEnabled(False)
-        self.btn3x2.setEnabled(False)
-        self.btn1x3.setEnabled(False)
-        self.btn2x3.setEnabled(False)
-        self.btn3x3.setEnabled(False)
-        self.btn4x1.setEnabled(False)
-        self.btn4x2.setEnabled(False)
-        self.btnGB3x1.setEnabled(False)
-        self.btnGB4x1.setEnabled(False)
-        self.btnGB1x1.setText("Iniciar Vida")
-        self.btnGB1x1.setStyleSheet("background:#e1e1e1;border:None;")
+        self.leds.post.off(name)
         
-    def startLife(self):
-        self.AuxLeds = True        
-        leds = ALProxy("ALLeds", self.robotIP, self.PORT)        
-        names = ['BrainLeds','FaceLeds','ChestLeds','FeetLeds','EarLeds']
-        for name in names: leds.post.on(name) 
-        self.motion.post.wakeUp()
-        # motion.post.goToPosture("Stand",0.3)
-        self.motion.post.setBreathEnabled("Body",True)
-        self.btn1x1.setEnabled(True)
-        self.btn2x1.setEnabled(True)
-        self.btn3x1.setEnabled(True)
-        self.btn1x2.setEnabled(True)
-        self.btn2x2.setEnabled(True)
-        self.btn3x2.setEnabled(True)
-        self.btn1x3.setEnabled(True)
-        self.btn2x3.setEnabled(True)
-        self.btn3x3.setEnabled(True)
-        self.btn4x1.setEnabled(True)
-        self.btn4x2.setEnabled(True)
-        self.btnGB3x1.setEnabled(True)
-        self.btnGB4x1.setEnabled(True)
+    def ledsOn(self):
+        name = "AllLeds"
+        self.leds.post.on(name)        
      
-    def startNaoRecording(self):
-        if (self.BtnConn.text() == "Conectar"):
-            return
+    def ligaDesligaEngajamento(self):
+        self.value = str(self.btnLife.text())
+        if self.value == 'Iniciar vida':
+            conn,aviso = self.ligaEngajamento()
+            if conn:
+                self.Movimentos.setEnabled(True)
+                self.btnLife.setText("Encerrar vida")                
+                self.enviarAviso(aviso)
+            else:
+                self.enviarAviso(aviso)
         else:
-            try:
-                self.startLife()
-                aviso = "AVISO: Iniciando a vida, ligando leds e levantando."
+            conn, aviso = self.desligaEngajamento()
+            if conn:
+                self.btnLife.setText('Iniciar vida')
                 self.enviarAviso(aviso)
-            except BaseException:
-                aviso = "ERROR: Falha na inicialização da vida."
-                self.enviarAviso(aviso)
-                return 
-            try:
-                self.faceTracker()
-                aviso = "AVISO: Detector de face inicializado com sucesso."
-                self.enviarAviso(aviso)
-                self.btnGB1x1.setEnabled(False)
-                self.btnGB1x1.setText("Conectado")
-                self.btnGB1x1.setStyleSheet("background-color:#40FF00;") 
-                self.btnGB2x1.setEnabled(True)
-            except BaseException:
-                aviso = "ERROR: Falha na inicialização do detector de face."
-                self.enviarAviso(aviso)
-                return     
+            else:
+                self.enviarAviso(aviso)            
+              
+    def ligaEngajamento(self):
+        try:
+            self.faceTracker()
+        except BaseException:
+            aviso = "ERROR: Falha na  inicialização do modo de engajamento."
+            return False, aviso
+        aviso = "AVISO: Contato visual iniciado."
+        return True,  aviso
 
-    def stopNaoRecording(self):
-        if (self.BtnConn.text() == "Conectar"):
-            return
-        else:
-            try:
-                self.tracker.stopTracker()
-                self.tracker.unregisterAllTargets()
-                self.ledsOff()
-                self.btnGB1x1.setEnabled(True)
-                self.btnGB1x1.setText("Iniciar Vida")
-                self.btnGB1x1.setStyleSheet("background:#e1e1e1;")
-                self.btnGB2x1.setEnabled(False)
-                aviso = "AVISO: Detector de face encerrado com sucesso."
-                self.enviarAviso(aviso)         
-            except BaseException:
-                aviso = "ERROR:Falha ao encerrar detector de face."
-                self.enviarAviso(aviso)
-                return
-            try:
-                self.salva_log()                
-            except BaseException:
-                aviso = "ERROR:Falha ao salvar log."
-                self.enviarAviso(aviso)
-                return 
-
-    def buttonEmotionOn(self):
-        self.BtnNaoView.setStyleSheet("background-color:#40FF00;")
-        self.BtnNaoView.setText(_fromUtf8("Câmera Ligada"))
-        # self.BtnNaoView.setEnabled(False)
-        return
+    def desligaEngajamento(self):
+        try:
+            self.tracker.stopTracker()
+            self.tracker.unregisterAllTargets()
+        except BaseException:
+            aviso = "ERROR:Falha ao encerrar detector de face."
+            return False, aviso
+        aviso = "AVISO: Detector de face encerrado com sucesso."
+        return True, aviso
     
     def retrivingImage(self):
         try:
             self.cameraWindow  = NAOimageRetriving(self.robotIP, self.PORT, 0)
             self.cameraWindow.show()
             self.buttonEmotionOn()
-            self.cameraWindow.exec_()
+            # self.cameraWindow.exec_()
         except:
             aviso = "Câmera já está em execução !"
             self.enviarAviso(aviso)
               
-  
     #Funções Movimentos
-    
     def buttonsLevantarOn(self):
             self.btn1x1.setEnabled(True)
             self.btn1x2.setEnabled(True)
@@ -697,17 +603,13 @@ class Ui_MainWindow(object):
             self.btn3x3.setEnabled(True)
             self.btn4x1.setEnabled(True)
             self.btn4x2.setEnabled(True)
-            self.btnGB3x1.setEnabled(True)
-            self.btnGB4x1.setEnabled(True)
-            return
-        
+            self.btn4x3.setEnabled(True)
+
     def levantar(self):
         try:            
-            # motion = ALProxy("ALMotion",self.robotIP,9559)
-            self.motion.post.wakeUp()
-            self.motion.post.setBreathEnabled("Body",True)
+            self.motion.setSmartStiffnessEnabled(True)
+            self.posture.post.goToPosture("Stand",0.5)
             self.buttonsLevantarOn()
-
             aviso = "AVISO: Comando Levantar enviado com sucesso."
             self.enviarAviso(aviso)
         except BaseException:
@@ -725,142 +627,134 @@ class Ui_MainWindow(object):
             self.btn3x3.setEnabled(False)
             self.btn4x1.setEnabled(False)
             self.btn4x2.setEnabled(False)
-            self.btnGB3x1.setEnabled(False)
-            self.btnGB4x1.setEnabled(False)
-            return
+            self.btn4x3.setEnabled(False)
+
                   
     def sentar(self):
         try:            
-            # motionProxy = ALProxy("ALMotion",self.robotIP,9559)
             self.motion.post.rest()
+            self.motion.post.setStiffnesses("Head", 1.0)
             self.buttonsSentarOff()
-
             aviso = "AVISO: Comando Sentar enviado com sucesso."
             self.enviarAviso(aviso)             
         except BaseException:
             aviso = "ERROR:Falha na execução do comando sentar."
             self.enviarAviso(aviso)
     def funcSentarLevantar(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:                        
-            if (self.btn3x1.text() == "Sentar"):                
-                self.btn3x1.setEnabled(False)
-                self.sentar()
-                self.aux = True
-                self.btn3x1.setText("Levantar")
-                self.btn3x1.setEnabled(True)
-            else:
-                self.btn3x1.setEnabled(False)
-                self.levantar()
-                self.btn3x1.setText("Sentar")
-                self.btn3x1.setEnabled(True)
+        if (self.btn3x1.text() == "Sentar"):                
+            self.sentar()
+            self.btn3x1.setText("Levantar")
+        else:
+            self.levantar()
+            self.btn3x1.setText("Sentar")
     def movimento(self,object):
-        try:
-            nomefunc = object.__name__
-            names, times, keys = object()
+        try:           
+            names, times, keys, nome = object()
         except BaseException:
             aviso = "Falha no envio dos dados."
             self.enviarAviso(aviso)
-            return
         try:
-            self.motion.post.wakeUp()
-            self.motion.post.angleInterpolation(names, keys, times, True)
-            self.motion.post.setBreathEnabled("Body",True)
+            self.motion.setSmartStiffnessEnabled(True)
+            not_run = ["Toca aqui","Receber","Pegar","Esconder","Achou"]
+            if(nome not in not_run):    
+                self.descansar(breath=False)
+                self.motion.post.angleInterpolation(names, keys, times, True)  
+                self.descansar(breath=True)
+                self.btn2x2.setText("Esconder")
+                self.btn4x3.setText("Receber")               
+            else:
+                self.descansar(breath=False)           
+                self.motion.post.angleInterpolation(names, keys, times, True)
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
-            aviso = "AVISO: Comando "+nomefunc+" enviado com sucesso."
+            aviso = "AVISO: Comando "+nome+" enviado com sucesso."
             self.enviarAviso(str(aviso))
         except BaseException:
-            aviso = "ERROR:Falha na execução do comando "+nomefunc+"."
+            aviso = "ERROR:Falha na execução do comando "+nome+"."
             self.enviarAviso(str(aviso))
-            return
-
+        
     def concordar(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn1x1.setEnabled(False)
-            self.movimento(concordar.Concordar)
-            self.btn1x1.setEnabled(True)
+        self.movimento(concordar.Concordar)
     def discordar(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn1x2.setEnabled(False)
-            self.movimento(discordar.Discordar)
-            self.btn1x2.setEnabled(True)
+        self.movimento(discordar.Discordar)
     def nossa(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn1x3.setEnabled(False)
-            self.movimento(nossa.Nossa)
-            self.btn1x3.setEnabled(True)
+        self.movimento(nossa.Nossa)
     def comemorar(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
+        self.movimento(comemorar.Comemorar)
+    def esconderRosto(self):
+        text = self.btn2x2.text()
+        if text != "Esconder":
+            self.movimento(brincadeira_2.Brincadeira_finished)
+            self.btn2x2.setText("Esconder")
         else:
-            self.btn2x1.setEnabled(False)        
-            self.movimento(comemorar.Comemorar)
-            self.btn2x1.setEnabled(True)
-    def empatia(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn2x2.setEnabled(False)
-            self.movimento(empatia.Empatia)
-            self.btn2x2.setEnabled(True)
+            self.movimento(brincadeira_1.Brincadeira_start)
+            self.btn2x2.setText("Achou")
     def duvida(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn2x3.setEnabled(False)
-            self.movimento(duvida.Duvida)
-            self.btn2x3.setEnabled(True)
+        self.movimento(duvida.Duvida)
     def palmas(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn3x2.setEnabled(False)
-            self.movimento(palmas.Palmas)
-            self.btn3x2.setEnabled(True)
+        self.movimento(palmas.Palmas)
     def tocaqui(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn3x3.setEnabled(False)
-            self.movimento(toca_aqui.TocaAqui)
-            self.btn3x3.setEnabled(True)
-    def tchau(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
-        else:
-            self.btn4x1.setEnabled(False)
-            self.movimento(tchau.Tchau)
-            self.btn4x1.setEnabled(True)
+        self.movimento(toca_aqui.TocaAqui)
+    def acenar(self):
+        self.movimento(acenar.Acenar)
     def beijos(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text() == "Iniciar Vida"):
-            return
+        self.movimento(beijos.Beijos)
+    def receberItem(self):
+        text = self.btn4x3.text()
+        if text == "Receber":
+            self.movimento(receberItem.ReceberItem)
+            self.motion.post.openHand("LHand")
+            self.btn4x3.setText(_fromUtf8("Pegar"))
         else:
-            self.btn4x2.setEnabled(False)
-            self.motion.wakeUp()
-            self.movimento(beijos.Beijos)
-            self.btn4x2.setEnabled(True)
-
+            self.movimento(pegaItem.PegarItem)
+            self.motion.post.closeHand("LHand")
+            self.btn4x3.setText(_fromUtf8("Receber"))
+    def respirar(self):
+        self.movimento(respiracao.Respiracao)
     #extras    
     def virarDireita(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text()== "Iniciar Vida"):
-            return
-        else:
-            self.motion.post.wakeUp()
-            self.motion.post.moveInit()
-            self.motion.post.moveTo(0,0,0.1)
+        self.motion.post.moveInit()
+        self.motion.post.moveTo(0,0,-0.1)
     def virarEsquerda(self):
-        if (self.BtnConn.text() == "Conectar") or (self.btnGB1x1.text()== "Iniciar Vida"):
-            return
+        self.motion.post.moveInit()
+        self.motion.post.moveTo(0,0,0.1)
+    def moveHead(self,ver=None,hor=None):
+        if ver != None:
+            try:
+                self.key = self.motion.getAngles("HeadPitch",False)
+                self.motion.post.angleInterpolation("HeadPitch", self.key[0]+ver, 1, True)
+                return False, None
+            except BaseException:
+                aviso = "ERROR: Falha na conexão!"
+                return True, aviso
         else:
-            self.motion.post.wakeUp()
-            self.motion.post.moveInit()
-            self.motion.post.moveTo(0,0,-0.1)
-    
+            try:
+                self.key = self.motion.getAngles("HeadYaw",False)
+                print(self.key)
+                angle = self.key[0] + hor
+                if (angle>=0.8):
+                    self.virarEsquerda()
+                elif(angle<= -1.2):
+                    self.virarDireita()
+                else:
+                    self.motion.post.angleInterpolation("HeadYaw", angle, 1, True)                    
+                return False, None
+            except BaseException:
+                aviso = "ERROR: Falha na conexão!"
+                return True, aviso
+    def moveHeadUp(self):        
+        conn, aviso = self.moveHead(ver=-0.2)
+        if conn:
+            self.enviarAviso(aviso)
+    def moveHeadDown(self):
+        conn, aviso = self.moveHead(ver=0.2)
+        if conn:
+            self.enviarAviso(aviso)
+    def moveHeadLeft(self):
+        conn, aviso = self.moveHead(hor=0.2)
+        if conn:
+            self.enviarAviso(aviso)          
+    def moveHeadRight(self):
+        conn, aviso = self.moveHead(hor=-0.2)
+        if conn:
+            self.enviarAviso(aviso)       
