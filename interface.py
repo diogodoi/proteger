@@ -305,6 +305,7 @@ class Ui_MainWindow(object):
         self.btnGB1x1.clicked.connect(self.moveHeadUp)
         self.btnGB2x1.clicked.connect(self.moveHeadLeft)
         self.btnGB3x1.clicked.connect(self.moveHeadRight)
+        self.btnGB4x1.clicked.connect(self.moveHeadDown)
         
         #Recupera o ultimo ip adicionado na lista.
         self.inputIP.setText(last_ip)
@@ -519,23 +520,19 @@ class Ui_MainWindow(object):
         targetName = "Face"
         faceWidth = 0.5
         self.tracker.registerTarget(targetName, faceWidth)
-
         # Then, start tracker.
         self.tracker.track(targetName)
         
     #Funções dos botões
-    def descansar(self,breath=True):
-        try:
+    def descansar(self):
+        try:             
             names,times,keys, _ = standard.RestPosition()
             self.motion.post.angleInterpolation(names,keys,times, True) 
-            self.motion.setBreathEnabled('Legs',breath)
             aviso = "AVISO: Comando Descansar enviado com sucesso."
-            self.enviarAviso(aviso) 
-                
+            self.enviarAviso(aviso)
         except BaseException:
             aviso = "ERROR:Falha na execução do comando."
             self.enviarAviso(aviso)
-            
     def ledsOff(self):
         name = "AllLeds"        
         self.leds.post.off(name)
@@ -656,14 +653,15 @@ class Ui_MainWindow(object):
         try:
             self.motion.setSmartStiffnessEnabled(True)
             not_run = ["Toca aqui","Receber","Pegar","Esconder","Achou"]
-            if(nome not in not_run):    
-                self.descansar(breath=False)
+            if(nome not in not_run):
+                self.motion.setBreathEnabled('Legs',False)    
                 self.motion.post.angleInterpolation(names, keys, times, True)  
-                self.descansar(breath=True)
+                self.descansar()
+                self.motion.setBreathEnabled('Legs',True)
                 self.btn2x2.setText("Esconder")
                 self.btn4x3.setText("Receber")               
             else:
-                self.descansar(breath=False)           
+                self.motion.setBreathEnabled('Legs',False)          
                 self.motion.post.angleInterpolation(names, keys, times, True)
             if (self.btn3x1.text()== "Levantar"):
                 self.btn3x1.setText("Sentar")
@@ -703,11 +701,11 @@ class Ui_MainWindow(object):
         text = self.btn4x3.text()
         if text == "Receber":
             self.movimento(receberItem.ReceberItem)
-            self.motion.post.openHand("LHand")
+            # self.motion.openHand("LHand")
             self.btn4x3.setText(_fromUtf8("Pegar"))
         else:
             self.movimento(pegaItem.PegarItem)
-            self.motion.post.closeHand("LHand")
+            # self.motion.post.closeHand("LHand")
             self.btn4x3.setText(_fromUtf8("Receber"))
     def respirar(self):
         self.movimento(respiracao.Respiracao)
@@ -722,6 +720,7 @@ class Ui_MainWindow(object):
         if ver != None:
             try:
                 self.key = self.motion.getAngles("HeadPitch",False)
+                print(self.key)
                 self.motion.post.angleInterpolation("HeadPitch", self.key[0]+ver, 1, True)
                 return False, None
             except BaseException:
@@ -730,7 +729,6 @@ class Ui_MainWindow(object):
         else:
             try:
                 self.key = self.motion.getAngles("HeadYaw",False)
-                print(self.key)
                 angle = self.key[0] + hor
                 if (angle>=0.8):
                     self.virarEsquerda()
