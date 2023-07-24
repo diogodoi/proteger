@@ -146,7 +146,7 @@ class Ui_MainWindow(object):
         self.btn2x2 = QtGui.QPushButton(self.Movimentos)
         self.btn2x2.setObjectName(_fromUtf8("btn2x2"))
         self.gridLayout_2.addWidget(self.btn2x2, 2, 2, 1, 1)
-        self.btn2x2.setToolTip(_fromUtf8("Esconde o rosto com as mãos.") )     
+        self.btn2x2.setToolTip(_fromUtf8("Esconde/Mostra o rosto com as mãos.") )     
         
         self.btn2x3 = QtGui.QPushButton(self.Movimentos)
         self.btn2x3.setObjectName(_fromUtf8("btn2x3"))
@@ -156,38 +156,40 @@ class Ui_MainWindow(object):
         self.btn3x1 = QtGui.QPushButton(self.Movimentos)
         self.btn3x1.setObjectName(_fromUtf8("btn3x1"))
         self.gridLayout_2.addWidget(self.btn3x1, 3, 1, 1, 1)
-        self.btn3x1.setToolTip(_fromUtf8("Faz o robô sentar/levantar"))
+        self.btn3x1.setToolTip(_fromUtf8("Senta ou Levanta."))
         
         self.btn3x2 = QtGui.QPushButton(self.Movimentos)
         self.btn3x2.setObjectName(_fromUtf8("btn3x2"))
         self.gridLayout_2.addWidget(self.btn3x2, 3, 2, 1, 1)
-        self.btn3x2.setToolTip(_fromUtf8("Faz o robô bater palmas."))
+        self.btn3x2.setToolTip(_fromUtf8("Bate palmas."))
                 
         self.btn3x3 = QtGui.QPushButton(self.Movimentos)
         self.btn3x3.setObjectName(_fromUtf8("btn3x3"))
         self.gridLayout_2.addWidget(self.btn3x3, 3, 3, 1, 1)
-        self.btn3x3.setToolTip(_fromUtf8("O robô levanta a mão para cumprimentar."))       
+        self.btn3x3.setToolTip(_fromUtf8("Levanta a mão para cumprimentar."))       
         
         
         self.btn4x1 = QtGui.QPushButton(self.Movimentos)
         self.btn4x1.setObjectName(_fromUtf8("btn4x1"))
         self.gridLayout_2.addWidget(self.btn4x1, 4, 1, 1, 1)
-        self.btn4x1.setToolTip(_fromUtf8("O robô acena."))
+        self.btn4x1.setToolTip(_fromUtf8("Acena com a mão direita."))
         
         self.btn4x2 = QtGui.QPushButton(self.Movimentos)
         self.btn4x2.setObjectName(_fromUtf8("btn4x2"))
         self.gridLayout_2.addWidget(self.btn4x2, 4, 2, 1, 1)
-        self.btn4x2.setToolTip(_fromUtf8("O robô envia um beijo."))
+        self.btn4x2.setToolTip(_fromUtf8("Envia um beijo."))
         
         
         self.btn4x3 = QtGui.QPushButton(self.Movimentos)
         self.btn4x3.setObjectName(_fromUtf8("btn4x3"))        
         self.gridLayout_2.addWidget(self.btn4x3, 4, 3, 1, 1)
+        self.btn4x3.setToolTip(_fromUtf8("Estende a mão esquerda para receber algum item."))
         
         self.btn5x1 = QtGui.QPushButton(self.Movimentos)
         self.btn5x1.setObjectName(_fromUtf8("btn5x1"))
         self.gridLayout_2.addWidget(self.btn5x1,5,1,1,1)
         self.btn5x1.setText(_fromUtf8("Respiração")) 
+        self.btn5x1.setToolTip(_fromUtf8("Executa a respiração diafragmática."))
         
         self.Movimentos.setEnabled(False)
         
@@ -242,40 +244,59 @@ class Ui_MainWindow(object):
         self.btnLife.setObjectName(_fromUtf8("btnLife"))
         self.btnLife.setIcon(QtGui.QIcon('imagens/icons/face_tracker.png'))        
         self.gridLayout_GB.addWidget(self.btnLife, 1, 1, 1, 3)
+        self.btnLife.setToolTip(_fromUtf8("Inicia o contato visual com a pessoa."))
         
         self.label_olhar = QtGui.QLabel(self.sessionBox)
         self.label_olhar.setObjectName(_fromUtf8("labelGirar"))
-        self.label_olhar.setText(_fromUtf8("Olhar para"))
-        self.label_olhar.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.label_olhar.setText(_fromUtf8("Movimentar a cabeça:"))
+        self.label_olhar.setAlignment( Qt.AlignVCenter)
         self.label_olhar.setStyleSheet("font:24px;")
         self.gridLayout_GB.addWidget(self.label_olhar, 2, 1, 1, 3)
         
         self.btnGB1x1 = QtGui.QPushButton(self.sessionBox)
         self.btnGB1x1.setObjectName(_fromUtf8("btnGB1x1"))        
         self.gridLayout_GB.addWidget(self.btnGB1x1, 3, 2, 1, 1)
-        self.btnGB1x1.setText("Cima")
+        iconBtgn1x1 = QtGui.QIcon()
+        iconBtgn1x1.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/icons/upArrow.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btnGB1x1.setIcon(iconBtgn1x1)
+        self.btnGB1x1.setToolTip(_fromUtf8("Olha para cima."))
+        # self.btnGB1x1.setText("Cima")
         
         self.btnGB2x1 = QtGui.QPushButton(self.sessionBox)
         self.btnGB2x1.setObjectName(_fromUtf8("btnGB2x1"))        
         self.gridLayout_GB.addWidget(self.btnGB2x1, 4, 1, 1, 1)
-        self.btnGB2x1.setText("Esquerda")
+        iconBtgn2x1 = QtGui.QIcon()
+        iconBtgn2x1.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/icons/leftArrow.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btnGB2x1.setIcon(iconBtgn2x1)
+        self.btnGB2x1.setToolTip(_fromUtf8("Olha para esquerda."))
+        # self.btnGB2x1.setText("Esquerda")
         
         self.btnGB3x1 = QtGui.QPushButton(self.sessionBox)
         self.btnGB3x1.setObjectName(_fromUtf8("btnGB3x1"))        
         self.gridLayout_GB.addWidget(self.btnGB3x1, 4, 3, 1, 1)
-        self.btnGB3x1.setText("Direita")
+        iconBtgn3x1 = QtGui.QIcon()
+        iconBtgn3x1.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/icons/rightArrow.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btnGB3x1.setIcon(iconBtgn3x1)
+        self.btnGB3x1.setToolTip(_fromUtf8("Olha para direita."))
+        # self.btnGB3x1.setText("Direita")
         
         self.btnGB4x1 = QtGui.QPushButton(self.sessionBox)
         self.btnGB4x1.setObjectName(_fromUtf8("btnGB4x1"))        
         self.gridLayout_GB.addWidget(self.btnGB4x1, 5, 2, 1, 1)
-        self.btnGB4x1.setText("Baixo")
+        iconBtgn4x1 = QtGui.QIcon()
+        iconBtgn4x1.addPixmap(QtGui.QPixmap(_fromUtf8("imagens/icons/downArrow.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.btnGB4x1.setIcon(iconBtgn4x1)
+        self.btnGB4x1.setToolTip(_fromUtf8("Olha para baixo."))
+        
+        # self.btnGB4x1.setText("Baixo")
         
         self.sessionBox.setEnabled(False)   
                 
         ### BOTAO EMERGENCIA
         self.btnRest = QtGui.QPushButton(self.centralwidget)
-        self.btnRest.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(0, 255, 0);font-weight:75;font-style:bold;")
+        self.btnRest.setStyleSheet("color: rgb(0, 0, 0); background-color: rgb(0, 0, 150);font-weight:75;font-style:bold;")
         self.btnRest.setObjectName(_fromUtf8("Descansar"))
+        self.btnRest.setToolTip(_fromUtf8("Posição de descanso dos braços."))
         MainWindow.setCentralWidget(self.centralwidget)        
         self.btnRest.setMinimumHeight(50)
         
@@ -334,14 +355,11 @@ class Ui_MainWindow(object):
         self.label_Ip.setText(_translate("MainWindow", "IP Robô", None))
         self.BtnConn.setText(_translate("MainWindow", "Conectar", None))
         self.label_Status.setText(_translate("MainWindow","Status:",None))
-        
         #Avisos
         self.label_avisos.setText(_translate("MainWindow", "Bem vindo a GUIPsyin! \n Para iniciar insira o ip do robô em configurações.", None))
-        
-        
-        #Gravação
+        #Sessão
         self.sessionBox.setTitle(_translate("ChatWindow", "Sessão", None))
-        self.btnLife.setText(_translate("MainWindow", "Iniciar vida", None))
+        self.btnLife.setText(_translate("MainWindow", "Iniciar contato visual", None))
         #Movimentos
         self.Movimentos.setTitle(_translate("MainWindow", "Movimentos", None))
         self.btn1x1.setText(_translate("MainWindow", "Concordar", None))
@@ -416,7 +434,7 @@ class Ui_MainWindow(object):
         
     def buttonsOff(self):
         self.BtnConn.setText("Conectar")
-        self.btnLife.setText("Iniciar vida")
+        self.btnLife.setText("Iniciar contato visual")
         self.inputIP.setEnabled(True)
         self.btnLife.setEnabled(False)        
         self.Movimentos.setEnabled(False)        
@@ -543,18 +561,18 @@ class Ui_MainWindow(object):
      
     def ligaDesligaEngajamento(self):
         self.value = str(self.btnLife.text())
-        if self.value == 'Iniciar vida':
+        if self.value == 'Iniciar contato visual':
             conn,aviso = self.ligaEngajamento()
             if conn:
                 self.Movimentos.setEnabled(True)
-                self.btnLife.setText("Encerrar vida")                
+                self.btnLife.setText("Encerrar contato visual")                
                 self.enviarAviso(aviso)
             else:
                 self.enviarAviso(aviso)
         else:
             conn, aviso = self.desligaEngajamento()
             if conn:
-                self.btnLife.setText('Iniciar vida')
+                self.btnLife.setText('Iniciar contato visual')
                 self.enviarAviso(aviso)
             else:
                 self.enviarAviso(aviso)            
@@ -563,7 +581,7 @@ class Ui_MainWindow(object):
         try:
             self.faceTracker()
         except BaseException:
-            aviso = "ERROR: Falha na  inicialização do modo de engajamento."
+            aviso = "ERROR: Falha na ao iniciar o contato visual."
             return False, aviso
         aviso = "AVISO: Contato visual iniciado."
         return True,  aviso
@@ -573,9 +591,9 @@ class Ui_MainWindow(object):
             self.tracker.stopTracker()
             self.tracker.unregisterAllTargets()
         except BaseException:
-            aviso = "ERROR:Falha ao encerrar detector de face."
+            aviso = "ERROR:Falha ao encerrar o contato visual."
             return False, aviso
-        aviso = "AVISO: Detector de face encerrado com sucesso."
+        aviso = "AVISO: Contato visual encerrado com sucesso."
         return True, aviso
     
     def retrivingImage(self):
@@ -601,6 +619,7 @@ class Ui_MainWindow(object):
             self.btn4x1.setEnabled(True)
             self.btn4x2.setEnabled(True)
             self.btn4x3.setEnabled(True)
+            self.btn5x1.setEnabled(True)
 
     def levantar(self):
         try:            
@@ -625,8 +644,8 @@ class Ui_MainWindow(object):
             self.btn4x1.setEnabled(False)
             self.btn4x2.setEnabled(False)
             self.btn4x3.setEnabled(False)
-
-                  
+            self.btn5x1.setEnabled(False)
+              
     def sentar(self):
         try:            
             self.motion.post.rest()
@@ -720,7 +739,6 @@ class Ui_MainWindow(object):
         if ver != None:
             try:
                 self.key = self.motion.getAngles("HeadPitch",False)
-                print(self.key)
                 self.motion.post.angleInterpolation("HeadPitch", self.key[0]+ver, 1, True)
                 return False, None
             except BaseException:
