@@ -1,6 +1,6 @@
 venv/
 .vscode
-*.pyc
+**.pyc
 **.avi
 **.wav
 **.txt

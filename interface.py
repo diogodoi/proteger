@@ -191,6 +191,13 @@ class Ui_MainWindow(object):
         self.btn5x1.setText(_fromUtf8("Respiração")) 
         self.btn5x1.setToolTip(_fromUtf8("Executa a respiração diafragmática."))
         
+        self.btn5x2 = QtGui.QPushButton(self.Movimentos)
+        self.btn5x2.setObjectName(_fromUtf8("btn5x2"))
+        self.gridLayout_2.addWidget(self.btn5x2,5,2,1,2)
+        self.btn5x2.setText(_fromUtf8("Descansar")) 
+        self.btn5x2.setToolTip(_fromUtf8("Retorna a posição de descanso."))
+        self.btn5x2.setStyleSheet("background-color: rgb(0, 0, 180);")
+        
         self.Movimentos.setEnabled(False)
         
     
@@ -293,12 +300,12 @@ class Ui_MainWindow(object):
         self.sessionBox.setEnabled(False)   
                 
         ### BOTAO EMERGENCIA
-        self.btnRest = QtGui.QPushButton(self.centralwidget)
-        self.btnRest.setStyleSheet("color: rgb(0, 0, 0); background-color: rgb(0, 0, 150);font-weight:75;font-style:bold;")
-        self.btnRest.setObjectName(_fromUtf8("Descansar"))
-        self.btnRest.setToolTip(_fromUtf8("Posição de descanso dos braços."))
+        self.btnEMG = QtGui.QPushButton(self.centralwidget)
+        self.btnEMG.setStyleSheet("color: rgb(255, 0, 0);font-weight:75;font-style:bold;")
+        self.btnEMG.setObjectName(_fromUtf8("EMERGÊNCIA/DESLIGAR"))
+        self.btnEMG.setToolTip(_fromUtf8("Desliga os motores do robô."))
         MainWindow.setCentralWidget(self.centralwidget)        
-        self.btnRest.setMinimumHeight(50)
+        self.btnEMG.setMinimumHeight(50)
         
         
         #Botões Configurações
@@ -320,7 +327,8 @@ class Ui_MainWindow(object):
         self.btn4x2.clicked.connect(self.beijos)
         self.btn4x3.clicked.connect(self.receberItem)
         self.btn5x1.clicked.connect(self.respirar)
-        self.btnRest.clicked.connect(self.descansar)
+        self.btn5x2.clicked.connect(self.descansar)
+        self.btnEMG.clicked.connect(self.desconectar)
         
         #Botões Sessão
         self.btnGB1x1.clicked.connect(self.moveHeadUp)
@@ -334,12 +342,12 @@ class Ui_MainWindow(object):
         completerip = QtGui.QCompleter(lista_ip)
         completerip.setCompletionMode(2)
         self.inputIP.setCompleter(completerip)
- 
+        
         #Posições das box em grid
         self.gridMain.addWidget(self.Menu, 1, 1, 1, 1)
         self.gridMain.addWidget(self.sessionBox,2,1,1,1)
         self.gridMain.addWidget(self.Movimentos, 1, 2, 2, 2)
-        self.gridMain.addWidget(self.btnRest, 3, 1, 1, 3)        
+        self.gridMain.addWidget(self.btnEMG, 3, 1, 1, 3)        
         self.gridMain.addWidget(self.Avisos, 4, 1, 1, 3)                        
 
         self.retranslateUi(MainWindow)
@@ -374,7 +382,7 @@ class Ui_MainWindow(object):
         self.btn4x1.setText(_translate("MainWindow", "Acenar", None))
         self.btn4x2.setText(_translate("MainWindow", "Beijos", None))
         self.btn4x3.setText(_translate("MainWindow", "Receber",None))        
-        self.btnRest.setText(_translate("MainWindow", "DESCANSAR", None))        
+        self.btnEMG.setText(_translate("MainWindow", "Emergência/Desligar", None))        
     
     def openSobre(self):
         self.windowSobre = QtGui.QWidget()
@@ -460,6 +468,8 @@ class Ui_MainWindow(object):
             self.buttonsOff()
             self.robotIP = ""
             self.inputIP.setEnabled(True)
+            self.label_BarStatus.setStyleSheet("background-color:gray;")
+            self.label_BarStatus.setText("")
             aviso = "AVISO: Sessão encerrada com sucesso."
             self.enviarAviso(aviso)                  
         except BaseException:
